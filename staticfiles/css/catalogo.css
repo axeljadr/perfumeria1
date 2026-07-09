@@ -1,0 +1,254 @@
+/* ===== HEADER CATÁLOGO ===== */
+.catalogo-header {
+    text-align: center;
+    padding: 5rem 2rem 3rem;
+    border-bottom: 1px solid #ebebeb;
+    background: var(--blanco);
+}
+
+.catalogo-header h1 {
+    font-family: var(--font-serif);
+    font-size: 3.5rem;
+    font-weight: 300;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.5rem;
+}
+
+.catalogo-header p {
+    color: var(--gris-claro);
+    font-size: 0.8rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+}
+
+/* ===== FILTROS ===== */
+.filtros {
+    max-width: 1200px;
+    margin: 2.5rem auto 0;
+    padding: 0 2rem;
+}
+
+.filtros-form {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.filtro-input,
+.filtro-select {
+    border: 1px solid #ddd;
+    padding: 0.6rem 1rem;
+    font-family: var(--font-sans);
+    font-size: 0.78rem;
+    background: var(--blanco);
+    color: var(--negro);
+    appearance: none;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.filtro-input {
+    min-width: 220px;
+}
+
+.filtro-select {
+    min-width: 160px;
+    cursor: pointer;
+}
+
+.filtro-input:focus,
+.filtro-select:focus {
+    border-color: var(--negro);
+}
+
+.btn-filtrar {
+    background: var(--negro);
+    color: var(--blanco);
+    border: none;
+    padding: 0.6rem 1.5rem;
+    font-family: var(--font-sans);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-filtrar:hover {
+    background: var(--dorado);
+}
+
+.btn-limpiar {
+    font-size: 0.72rem;
+    color: var(--gris-claro);
+    text-decoration: none;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    transition: color 0.2s;
+}
+
+.btn-limpiar:hover {
+    color: var(--negro);
+}
+
+/* ===== GRID DE PERFUMES ===== */
+.perfumes-grid {
+    max-width: 1200px;
+    margin: 3rem auto;
+    padding: 0 2rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 3rem 2rem;
+}
+
+.perfume-card-wrapper {
+    position: relative;
+}
+
+.perfume-card {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    background: var(--blanco);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.perfume-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+}
+
+.card-imagen {
+    aspect-ratio: 3/4;
+    overflow: hidden;
+    background: #f3f3f3;
+}
+
+.card-imagen img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.perfume-card:hover .card-imagen img {
+    transform: scale(1.04);
+}
+
+.sin-imagen {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--gris-claro);
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.card-info {
+    padding: 1.2rem 1rem;
+    text-align: center;
+}
+
+.card-marca {
+    display: block;
+    font-size: 0.65rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--gris-medio);
+    margin-bottom: 0.4rem;
+}
+
+.card-nombre {
+    font-family: var(--font-serif);
+    font-size: 1.5rem;
+    font-weight: 400;
+    margin-bottom: 0.4rem;
+}
+
+.card-genero {
+    display: block;
+    font-size: 0.68rem;
+    color: var(--gris-claro);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 0.8rem;
+}
+
+.card-presentaciones {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.4rem;
+    margin-bottom: 0.8rem;
+}
+
+.tag-presentacion {
+    font-size: 0.65rem;
+    border: 1px solid #ddd;
+    padding: 0.2rem 0.6rem;
+    letter-spacing: 0.08em;
+    color: var(--gris-medio);
+}
+
+.tag-presentacion.agotado {
+    color: var(--gris-claro);
+    border-color: #eee;
+    text-decoration: line-through;
+}
+
+.card-precio {
+    display: block;
+    font-family: var(--font-serif);
+    font-size: 1.1rem;
+    color: var(--dorado);
+}
+
+.btn-editar {
+    position: absolute;
+    top: 0.8rem;
+    right: 0.8rem;
+    background: var(--negro);
+    color: var(--blanco);
+    font-size: 0.65rem;
+    padding: 0.3rem 0.7rem;
+    text-decoration: none;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    z-index: 2;
+    transition: background 0.2s;
+}
+
+.btn-editar:hover {
+    background: var(--dorado);
+}
+
+@media (max-width: 768px) {
+    .catalogo-header h1 {
+        font-size: 2.5rem;
+    }
+
+    .filtros-form {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .filtro-input,
+    .filtro-select {
+        min-width: 100%;
+    }
+
+    .perfumes-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .perfumes-grid {
+        grid-template-columns: 1fr;
+    }
+}
