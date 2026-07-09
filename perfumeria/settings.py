@@ -24,11 +24,17 @@ CLOUDINARY_STORAGE = {
 
 SECRET_KEY=os.getenv('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = []
-
-  
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+    '.onrender.com',  # Permite cualquier subdominio de onrender.com
+    # También puedes añadir tu dominio personalizado si lo tienes
+]
+CSRF_TRUSTED_ORIGINS = [
+    'https://*.onrender.com',
+]
 
 INSTALLED_APPS = [
     "django.contrib.admin",
