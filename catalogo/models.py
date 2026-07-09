@@ -1,5 +1,5 @@
 from django.db import models
-
+from cloudinary.models import CloudinaryField
 
 class FamiliaOlfativa(models.Model):
     nombre = models.CharField(max_length=100)
@@ -70,7 +70,7 @@ class Perfume(models.Model):
     estela = models.CharField(max_length=10, choices=ESTELA_CHOICES, blank=True)
     uso = models.CharField(max_length=10, choices=USO_CHOICES, blank=True)
 
-    imagen_portada = models.ImageField(upload_to='perfumes/portadas/', blank=True, null=True)
+    imagen_portada = CloudinaryField('imagen', folder='perfumes/portadas', blank=True, null=True)
     activo = models.BooleanField(default=True)
     creado_en = models.DateTimeField(auto_now_add=True)
 

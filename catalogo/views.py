@@ -45,6 +45,7 @@ def detalle_perfume(request, pk):
 def crear_perfume(request):
     if request.method == 'POST':
         form = PerfumeForm(request.POST, request.FILES)
+        print(request.FILES)
         if form.is_valid():
             perfume = form.save()
             return redirect('detalle_perfume', pk=perfume.pk)
