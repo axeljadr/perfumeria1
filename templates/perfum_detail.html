@@ -1,0 +1,149 @@
+{% extends 'base.html' %}
+
+{% load static %}
+<head>
+    {% block title %}{{ perfume.nombre }} — Arabes en Reynosa{% endblock %}
+    {% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/detalle.css' %}">
+{% endblock %}
+</head>
+{% block content %}
+<section class="detalle-container">
+
+    <div class="detalle-imagen">
+        {% if perfume.imagen_portada %}
+        <img src="{{ perfume.imagen_portada.url }}" alt="{{ perfume.nombre }}">
+        {% else %}
+        <div class="sin-imagen grande">Sin imagen</div>
+        {% endif %}
+    </div>
+
+    <div class="detalle-info">
+        <span class="detalle-marca">{{ perfume.marca }}</span>
+        <h1 class="detalle-nombre">{{ perfume.nombre }}</h1>
+        <span class="detalle-genero">{{ perfume.get_genero_display }}</span>
+
+        {% if perfume.descripcion %}
+        <p class="detalle-descripcion">{{ perfume.descripcion }}</p>
+        {% endif %}
+
+        {% if presentaciones %}
+        <div class="presentaciones-selector">
+            <h3>Presentación</h3>
+            <div class="presentaciones-opciones">
+                {% for p in presentaciones %}
+                <button class="btn-presentacion {% if forloop.first %}activo{% endif %}"
+                        data-precio="{{ p.precio }}"
+                        data-stock="{{ p.stock }}"
+                        onclick="seleccionarPresentacion(this)">
+                    {{ p.get_tipo_display }} {{ p.volumen_ml }}
+                    {% if not p.disponible %}<br><small>Solicitar</small>{% endif %}
+                </button>
+                {% endfor %}
+            </div>
+            <div class="precio-seleccionado">
+                <span id="precio-display">${{ presentaciones.0.precio }}</span>
+                <span id="stock-display">
+                    {% if presentaciones.0.disponible %}En stock{% else %}Disponible por pedido{% endif %}
+                </span>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if perfume.familia_olfativa or perfume.longevidad or perfume.estela or perfume.uso %}
+        <div class="perfil-olfativo">
+            {% if perfume.familia_olfativa %}
+            <div class="perfil-item">
+                <span class="perfil-label">Familia</span>
+                <span>{{ perfume.familia_olfativa }}</span>
+            </div>
+            {% endif %}
+            {% if perfume.longevidad %}
+            <div class="perfil-item">
+                <span class="perfil-label">Longevidad</span>
+                <span>{{ perfume.get_longevidad_display }}</span>
+            </div>
+            {% endif %}
+            {% if perfume.estela %}
+            <div class="perfil-item">
+                <span class="perfil-label">Estela</span>
+                <span>{{ perfume.get_estela_display }}</span>
+            </div>
+            {% endif %}
+            {% if perfume.uso %}
+            <div class="perfil-item">
+                <span class="perfil-label">Uso</span>
+                <span>{{ perfume.get_uso_display }}</span>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        {% if perfume.acordes.all %}
+        <div class="acordes">
+            <h3>Acordes principales</h3>
+            <div class="acordes-lista">
+                {% for acorde in perfume.acordes.all %}
+                <span class="tag-acorde">{{ acorde.nombre }}</span>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if perfume.notas.all %}
+        <div class="notas">
+            <h3>Notas</h3>
+            <div class="notas-lista">
+                {% for nota in perfume.notas.all %}
+                <span class="tag-nota">{{ nota.nombre }}</span>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if request.user.is_staff %}
+        <a href="{% url 'editar_perfume' perfume.pk %}" class="btn-primary" style="margin-top:2rem; display:inline-block;">
+            Editar perfume
+        </a>
+        {% endif %}
+    </div>
+    {% if request.user.is_staff %}
+    <div class="presentaciones-admin">
+        <div class="admin-header">
+            <h3>Presentaciones</h3>
+            <a href="{% url 'presentacion_crear' perfume.pk %}" class="btn-primary btn-sm">+ Agregar</a>
+        </div>
+        <div class="admin-lista">
+            {% for p in presentaciones %}
+            <div class="admin-item">
+                <div class="admin-item-info">
+                    <span class="admin-item-nombre">{{ p.get_tipo_display }} — {{ p.volumen_ml }}</span>
+                    <span class="admin-item-precio">${{ p.precio }}</span>
+                    <span class="admin-item-stock">
+                        {% if p.disponible %}
+                            ✓ {{ p.stock }} en stock
+                        {% else %}
+                            ✗ Sin stock
+                        {% endif %}
+                        {% if p.apartados_activos > 0 %}
+                            · <strong style="color:var(--dorado);">{{ p.apartados_activos }}</strong> apartado{% if p.apartados_activos > 1 %}s{% endif %}
+                        {% endif %}
+                    </span>
+                    {% if p.apartados_activos >= p.stock and p.stock > 0 %}
+                    <span style="font-size:0.65rem;color:#8b0000;letter-spacing:0.05em;font-weight:600;">TODO APARTADO</span>
+                    {% endif %}
+                    <span class="admin-item-estado">{% if p.activo %}Activo{% else %}Inactivo{% endif %}</span>
+                </div>
+                <div class="admin-item-acciones">
+                    <a href="{% url 'presentacion_editar' p.pk %}">Editar</a>
+                    <a href="{% url 'presentacion_eliminar' p.pk %}" class="accion-eliminar">Eliminar</a>
+                </div>
+            </div>
+            {% empty %}
+            <p style="color:var(--gris-claro); font-size:0.85rem;">Sin presentaciones aún.</p>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</section>
+{% endblock %}

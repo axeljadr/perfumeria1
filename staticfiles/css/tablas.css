@@ -1,0 +1,45 @@
+.tabla-wrapper {
+    overflow-x: auto;
+    margin-bottom: 2rem;
+    border: 1px solid #e0e0e0;
+}
+
+.tabla-cotizacion {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--blanco);
+    font-size: 0.85rem;
+}
+
+.tabla-cotizacion th {
+    background: var(--negro);
+    color: var(--blanco);
+    padding: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 0.7rem;
+}
+
+.tabla-cotizacion td {
+    padding: 0.8rem;
+    border: 1px solid #f0f0f0;
+    text-align: center;
+}
+
+.td-perfume {
+    text-align: left !important;
+    font-weight: 600;
+    min-width: 200px;
+}
+
+.celda-input {
+    width: 80px;
+    padding: 0.4rem;
+    border: 1px solid #ddd;
+    text-align: center;
+}
+
+.fila-total {
+    background: #f9f9f9;
+    font-weight: bold;
+}

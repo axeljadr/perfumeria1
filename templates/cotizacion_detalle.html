@@ -1,0 +1,205 @@
+{% extends 'base.html' %}
+
+{% load static %}
+{% load dict_extras %}
+<head>
+    {% block title %}{{ cotizacion.descripcion }}{% endblock %}
+    {% block extra_css %}
+    <link rel="stylesheet" href="{% static '/css/tablas.css' %}">
+    <link rel="stylesheet" href="{% static '/css/formularios.css' %}">
+    {% endblock %}
+    {% block content %}
+</head>
+<section class="cotizacion-container">
+
+    <div class="cotizacion-header">
+        <div>
+            <a href="{% url 'cotizaciones_lista' %}" class="form-breadcrumb-link">← Cotizaciones</a>
+            <h1>{{ cotizacion.descripcion }}</h1>
+            <small>{{ cotizacion.fecha|date:"d/m/Y H:i" }}
+                {% if cotizacion.cerrada %}
+                <span class="badge-cerrada">Cerrada — solo lectura</span>
+                {% endif %}
+            </small>
+        </div>
+        {% if not cotizacion.cerrada %}
+        <div class="cotizacion-acciones">
+            <form method="POST" action="{% url 'cotizacion_cerrar' cotizacion.pk %}"
+                  onsubmit="return confirm('¿Cerrar esta cotización? Ya no podrás editarla.')">
+                {% csrf_token %}
+                <button type="submit" class="btn-secondary">Cerrar cotización</button>
+            </form>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- TABLA PRINCIPAL -->
+    <form method="POST" action="{% url 'cotizacion_guardar_precios' cotizacion.pk %}">
+        {% csrf_token %}
+        <div class="tabla-wrapper">
+            <table class="tabla-cotizacion">
+                <thead>
+                    <tr>
+                        <th class="th-perfume">Perfume</th>
+                        {% for columna in columnas %}
+                        <th>
+                            {{ columna.proveedor.nombre }}
+                            {% if not cotizacion.cerrada %}
+                            <form method="POST" action="{% url 'cotizacion_eliminar_columna' columna.pk %}"
+                                  style="display:inline"
+                                  onsubmit="return confirm('¿Quitar este proveedor?')">
+                                {% csrf_token %}
+                                <button type="submit" class="btn-quitar">✕</button>
+                            </form>
+                            {% endif %}
+                        </th>
+                        {% endfor %}
+                        <th class="th-acciones"></th>
+                    </tr>
+                    <!-- Fila de envío -->
+                    <tr class="fila-envio">
+                        <td class="td-label">Envío</td>
+                        {% for columna in columnas %}
+                        <td>
+                            {% if not cotizacion.cerrada %}
+                            <input type="number" name="envio_{{ columna.pk }}"
+                                   value="{{ columna.envio }}"
+                                   class="celda-input envio-input"
+                                   step="0.01" min="0">
+                            {% else %}
+                            ${{ columna.envio }}
+                            {% endif %}
+                        </td>
+                        {% endfor %}
+                        <td></td>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in tabla %}
+                    <tr>
+                        <td class="td-perfume">
+                            {{ row.fila.perfume_nombre }}
+                            {% if not cotizacion.cerrada %}
+                            <form method="POST" action="{% url 'cotizacion_eliminar_fila' row.fila.pk %}"
+                                  style="display:inline"
+                                  onsubmit="return confirm('¿Quitar este perfume?')">
+                                {% csrf_token %}
+                                <button type="submit" class="btn-quitar">✕</button>
+                            </form>
+                            {% endif %}
+                        </td>
+                        {% for columna in columnas %}
+                        <td>
+                            {% with celda=row.celdas|get_item:columna.pk %}
+                            {% if not cotizacion.cerrada %}
+                            <input type="number" name="celda_{{ celda.pk }}"
+                                   value="{% if celda.precio %}{{ celda.precio }}{% endif %}"
+                                   class="celda-input"
+                                   step="0.01" min="0"
+                                   placeholder="—">
+                            {% else %}
+                            {% if celda.precio %}${{ celda.precio }}{% else %}—{% endif %}
+                            {% endif %}
+                            {% endwith %}
+                        </td>
+                        {% endfor %}
+                        <td></td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="{{ columnas.count|add:2 }}" style="text-align:center; color:var(--gris-claro); padding:2rem;">
+                            Agrega perfumes para comenzar
+                        </td>
+                    </tr>
+                    {% endfor %}
+
+                    <!-- Fila de totales -->
+                    {% if tabla %}
+                    <tr class="fila-total">
+                        <td>Total</td>
+                        {% for columna in columnas %}
+                        <td class="total-col" data-columna="{{ columna.pk }}">—</td>
+                        {% endfor %}
+                        <td></td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if not cotizacion.cerrada %}
+        <div class="tabla-footer">
+            <button type="submit" class="btn-primary">💾 Guardar precios</button>
+        </div>
+        {% endif %}
+    </form>
+
+    {% if not cotizacion.cerrada %}
+    <!-- Agregar perfume -->
+    <div class="agregar-fila">
+        <form method="POST" action="{% url 'cotizacion_agregar_fila' cotizacion.pk %}" class="form-inline">
+            {% csrf_token %}
+            <input type="text" name="perfume_nombre" placeholder="Nombre del perfume..." class="filtro-input">
+            <button type="submit" class="btn-primary">+ Agregar perfume</button>
+        </form>
+    </div>
+
+    <!-- Agregar proveedor -->
+    {% if proveedores_disponibles %}
+    <div class="agregar-columna">
+        <form method="POST" action="{% url 'cotizacion_agregar_columna' cotizacion.pk %}" class="form-inline">
+            {% csrf_token %}
+            <select name="proveedor_id" class="filtro-select">
+                <option value="">Seleccionar proveedor...</option>
+                {% for p in proveedores_disponibles %}
+                <option value="{{ p.pk }}">{{ p.nombre }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="btn-primary">+ Agregar proveedor</button>
+        </form>
+    </div>
+    {% else %}
+    <p style="font-size:0.8rem; color:var(--gris-claro); margin-top:1rem;">
+        Todos los proveedores ya están en esta cotización.
+        <a href="{% url 'proveedores_lista' %}">Agregar nuevo proveedor</a>
+    </p>
+    {% endif %}
+    {% endif %}
+
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Calcular totales por columna en tiempo real
+function calcularTotales() {
+    document.querySelectorAll('.total-col').forEach(totalCell => {
+        const columnaId = totalCell.dataset.columna;
+        let suma = 0;
+        let tieneValores = false;
+
+        // Sumar celdas de esa columna
+        document.querySelectorAll(`input[name$="_${columnaId}"]`).forEach(input => {
+            if (input.value) {
+                suma += parseFloat(input.value) || 0;
+                tieneValores = true;
+            }
+        });
+
+        // Sumar envío
+        const envioInput = document.querySelector(`input[name="envio_${columnaId}"]`);
+        if (envioInput && envioInput.value) {
+            suma += parseFloat(envioInput.value) || 0;
+        }
+
+        totalCell.textContent = tieneValores ? `$${suma.toFixed(2)}` : '—';
+    });
+}
+
+document.querySelectorAll('.celda-input').forEach(input => {
+    input.addEventListener('input', calcularTotales);
+});
+
+calcularTotales();
+</script>
+{% endblock %}

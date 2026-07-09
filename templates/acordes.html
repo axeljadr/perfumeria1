@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% load static %}
+<head>
+    {% block title %}Acordes{% endblock %}
+    {% block extra_css %}
+    <link rel="stylesheet" href="{% static '/css/formularios.css' %}">
+    {% endblock %}
+</head>
+
+{% block content %}
+<section class="gestion-container">
+    <div class="gestion-header">
+        <h1>Acordes</h1>
+    </div>
+
+    <div class="gestion-layout">
+
+        <div class="gestion-form">
+            <h3>Nuevo acorde</h3>
+            <form method="POST">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label>Nombre</label>
+                    {{ form.nombre }}
+                    {{ form.nombre.errors }}
+                </div>
+                <button type="submit" class="btn-primary">Agregar</button>
+            </form>
+        </div>
+
+        <div class="gestion-lista">
+            <h3>Acordes registrados ({{ acordes.count }})</h3>
+            {% for acorde in acordes %}
+            <div class="gestion-item">
+                <span>{{ acorde.nombre }}</span>
+                <div class="item-acciones">
+                    <a href="{% url 'acorde_editar' acorde.pk %}">Editar</a>
+                    <a href="{% url 'acorde_eliminar' acorde.pk %}" class="accion-eliminar">Eliminar</a>
+                </div>
+            </div>
+            {% empty %}
+            <p class="sin-resultados">No hay acordes registrados.</p>
+            {% endfor %}
+        </div>
+
+    </div>
+</section>
+{% endblock %}

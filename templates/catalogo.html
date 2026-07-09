@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+{% load static %}
+<head>
+    {% block title %}Catálogo — Arabes en Reynosa{% endblock %}
+    {% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/catalogo.css' %}">
+    {% endblock %}
+</head>
+{% block content %}
+<section class="catalogo-header">
+    <h1>Catálogo de Fragancias</h1>
+    <p>Descubre nuestra colección de perfumes árabes</p>
+</section>
+
+<section class="filtros">
+    <form method="GET" class="filtros-form">
+        <input type="text" name="q" placeholder="Buscar perfume o marca..."
+               value="{{ request.GET.q }}" class="filtro-input">
+
+        <select name="genero" class="filtro-select">
+            <option value="">Género</option>
+            {% for value, label in generos %}
+            <option value="{{ value }}" {% if request.GET.genero == value %}selected{% endif %}>
+                {{ label }}
+            </option>
+            {% endfor %}
+        </select>
+
+        <select name="familia" class="filtro-select">
+            <option value="">Familia olfativa</option>
+            {% for f in familias %}
+            <option value="{{ f.id }}" {% if request.GET.familia == f.id|stringformat:"s" %}selected{% endif %}>
+                {{ f.nombre }}
+            </option>
+            {% endfor %}
+        </select>
+
+        <select name="acorde" class="filtro-select">
+            <option value="">Acorde</option>
+            {% for a in acordes %}
+            <option value="{{ a.id }}" {% if request.GET.acorde == a.id|stringformat:"s" %}selected{% endif %}>
+                {{ a.nombre }}
+            </option>
+            {% endfor %}
+        </select>
+
+        <button type="submit" class="btn-filtrar">Filtrar</button>
+        <a href="{% url 'catalogo' %}" class="btn-limpiar">Limpiar</a>
+    </form>
+</section>
+
+<section class="perfumes-grid">
+    {% for perfume in perfumes %}
+    <div class="perfume-card-wrapper">
+        <a href="{% url 'detalle_perfume' perfume.pk %}" class="perfume-card">
+            <div class="card-imagen">
+                {% if perfume.imagen_portada %}
+                <img src="{{ perfume.imagen_portada.url }}" alt="{{ perfume.nombre }}">
+                {% else %}
+                <div class="sin-imagen">Sin imagen</div>
+                {% endif %}
+            </div>
+            <div class="card-info">
+                <span class="card-marca">{{ perfume.marca }}</span>
+                <h3 class="card-nombre">{{ perfume.nombre }}</h3>
+                <span class="card-genero">{{ perfume.get_genero_display }}</span>
+                <div class="card-presentaciones">
+                    {% for p in perfume.presentaciones.all %}
+                        {% if p.activo %}
+                        <span class="tag-presentacion {% if not p.disponible %}agotado{% endif %}">
+                            {{ p.volumen_ml }}
+                            {% if not p.disponible %}<small>(Solicitar)</small>{% endif %}
+                        </span>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                {% with perfume.presentaciones.all|first as primera %}
+                {% if primera %}
+                <span class="card-precio">Desde ${{ primera.precio }}</span>
+                {% endif %}
+                {% endwith %}
+            </div>
+        </a>
+        {% if request.user.is_staff %}
+        <a href="{% url 'editar_perfume' perfume.pk %}" class="btn-editar">Editar</a>
+        {% endif %}
+    </div>
+    {% empty %}
+    <p class="sin-resultados">No se encontraron perfumes con esos filtros.</p>
+    {% endfor %}
+</section>
+{% endblock %}

@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% load static %}
+<head>
+    {% block title %}Cotizaciones{% endblock %}
+    {% block extra_css %}
+    <link rel="stylesheet" href="{% static '/css/tablas.css' %}">
+    <link rel="stylesheet" href="{% static '/css/formularios.css' %}">
+    {% endblock %}
+</head>
+{% block content %}
+<section class="gestion-container">
+    <div class="gestion-header">
+        <h1>Cotizaciones</h1>
+    </div>
+
+    <div class="gestion-layout">
+
+        <div class="gestion-form">
+            <h3>Nueva cotización</h3>
+            <form method="POST">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label>Descripción</label>
+                    {{ form.descripcion }}
+                    {{ form.descripcion.errors }}
+                </div>
+                <button type="submit" class="btn-primary">Crear</button>
+            </form>
+        </div>
+
+        <div class="gestion-lista">
+            <h3>Historial ({{ cotizaciones.count }})</h3>
+            {% for c in cotizaciones %}
+            <div class="gestion-item">
+                <div style="flex:1">
+                    <span style="font-weight:500">{{ c.descripcion }}</span>
+                    <small style="display:block; color:var(--gris-claro); font-size:0.75rem;">
+                        {{ c.fecha|date:"d/m/Y H:i" }}
+                        {% if c.cerrada %}<span class="badge-cerrada">Cerrada</span>{% endif %}
+                    </small>
+                </div>
+                <div class="item-acciones">
+                    <a href="{% url 'cotizacion_detalle' c.pk %}">Ver</a>
+                    {% if not c.cerrada %}
+                    <a href="{% url 'cotizacion_eliminar' c.pk %}" class="accion-eliminar">Eliminar</a>
+                    {% endif %}
+                </div>
+            </div>
+            {% empty %}
+            <p class="sin-resultados">No hay cotizaciones aún.</p>
+            {% endfor %}
+        </div>
+
+    </div>
+</section>
+{% endblock %}

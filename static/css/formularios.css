@@ -1,0 +1,302 @@
+/* ===== CONTENEDOR GENERAL ===== */
+.form-container {
+    max-width: 800px;
+    margin: 4rem auto;
+    padding: 0 2rem;
+}
+
+.form-container h1 {
+    font-family: var(--font-serif);
+    font-size: 2.5rem;
+    font-weight: 300;
+    margin-bottom: 2.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #ebebeb;
+}
+
+/* ===== SECCIONES ===== */
+.form-section {
+    background: var(--blanco);
+    border: 1px solid #ebebeb;
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+}
+
+.form-section h3 {
+    font-family: var(--font-serif);
+    font-size: 1rem;
+    font-weight: 400;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.8rem;
+    border-bottom: 1px solid #f0f0f0;
+    color: var(--gris-medio);
+}
+
+/* ===== GRUPOS ===== */
+.form-group {
+    margin-bottom: 1.2rem;
+}
+
+.form-group label {
+    display: block;
+    font-size: 0.68rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gris-medio);
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+}
+
+.form-row-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+/* ===== INPUTS ===== */
+.form-container input[type="text"],
+.form-container input[type="number"],
+.form-container input[type="email"],
+.form-container input[type="password"],
+.form-container select,
+.form-container textarea {
+    width: 100%;
+    border: 1px solid #ddd;
+    padding: 0.7rem 1rem;
+    font-family: var(--font-sans);
+    font-size: 0.85rem;
+    background: var(--off-white);
+    color: var(--negro);
+    outline: none;
+    transition: border-color 0.2s;
+    appearance: none;
+}
+
+.form-container input:focus,
+.form-container select:focus,
+.form-container textarea:focus {
+    border-color: var(--negro);
+    background: var(--blanco);
+}
+
+.form-container textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+.form-container input[type="checkbox"] {
+    width: auto;
+    accent-color: var(--negro);
+    cursor: pointer;
+}
+
+.form-container input[type="file"] {
+    width: 100%;
+    font-size: 0.78rem;
+    color: var(--gris-medio);
+    padding: 0.5rem 0;
+}
+
+/* ===== CHECKBOXES (acordes/notas) ===== */
+.checkbox-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.checkbox-group label {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.78rem;
+    text-transform: none;
+    letter-spacing: 0;
+    color: var(--gris-oscuro);
+    cursor: pointer;
+    border: 1px solid #ddd;
+    padding: 0.3rem 0.8rem;
+    background: var(--blanco);
+    transition: border-color 0.2s, background 0.2s;
+}
+
+.checkbox-group label:hover {
+    border-color: var(--negro);
+}
+
+.checkbox-group input[type="checkbox"]:checked+span,
+.checkbox-group label:has(input:checked) {
+    background: var(--negro);
+    color: var(--blanco);
+    border-color: var(--negro);
+}
+
+/* ===== ERRORES ===== */
+.errorlist {
+    list-style: none;
+    margin-top: 0.3rem;
+}
+
+.errorlist li {
+    font-size: 0.72rem;
+    color: #8b0000;
+    letter-spacing: 0.05em;
+}
+
+/* ===== ACCIONES ===== */
+.form-actions {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
+
+/* ===== GESTIÓN (familias, acordes, notas, proveedores) ===== */
+.gestion-container {
+    max-width: 1100px;
+    margin: 3rem auto;
+    padding: 0 2rem;
+}
+
+.gestion-header {
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.gestion-header h1 {
+    font-family: var(--font-serif);
+    font-size: 2.5rem;
+    font-weight: 300;
+}
+
+.gestion-layout {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 3rem;
+    align-items: start;
+}
+
+.gestion-form {
+    background: var(--blanco);
+    border: 1px solid #e0e0e0;
+    padding: 1.5rem;
+    position: sticky;
+    top: 90px;
+}
+
+.gestion-form h3 {
+    font-family: var(--font-serif);
+    font-size: 1rem;
+    font-weight: 400;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 1.2rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #e0e0e0;
+    color: var(--gris-medio);
+}
+
+.gestion-form input,
+.gestion-form select,
+.gestion-form textarea {
+    width: 100%;
+    border: 1px solid #ddd;
+    padding: 0.6rem 0.8rem;
+    font-family: var(--font-sans);
+    font-size: 0.82rem;
+    background: var(--off-white);
+    outline: none;
+    transition: border-color 0.2s;
+    margin-bottom: 0;
+}
+
+.gestion-form input:focus,
+.gestion-form select:focus,
+.gestion-form textarea:focus {
+    border-color: var(--negro);
+    background: var(--blanco);
+}
+
+.gestion-lista h3 {
+    font-family: var(--font-serif);
+    font-size: 1rem;
+    font-weight: 400;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+    color: var(--gris-medio);
+}
+
+.gestion-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.9rem 1rem;
+    border-bottom: 1px solid #f0f0f0;
+    background: var(--blanco);
+    transition: background 0.2s;
+}
+
+.gestion-item:hover {
+    background: #fafafa;
+}
+
+.gestion-item span {
+    flex: 1;
+    font-size: 0.88rem;
+}
+
+.item-desc {
+    color: var(--gris-claro);
+    font-size: 0.72rem;
+    flex: 2;
+}
+
+.item-acciones {
+    display: flex;
+    gap: 1rem;
+}
+
+.item-acciones a {
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--gris-medio);
+    transition: color 0.2s;
+}
+
+.item-acciones a:hover {
+    color: var(--negro);
+}
+
+.nota-thumb {
+    width: 36px;
+    height: 36px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 1px solid #e0e0e0;
+}
+
+@media (max-width: 768px) {
+    .gestion-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .gestion-form {
+        position: static;
+    }
+
+    .form-row,
+    .form-row-2 {
+        grid-template-columns: 1fr;
+    }
+}   

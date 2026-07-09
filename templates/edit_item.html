@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% load static %}
+<head>
+    {% block title %}{{ titulo }}{% endblock %}
+    {% block extra_css %}
+    <link rel="stylesheet" href="{% static '/css/formularios.css' %}">
+    {% endblock %}
+</head>
+{% block content %}
+<section class="form-container">
+    <h1>{{ titulo }}</h1>
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="form-section">
+            {% for field in form %}
+            <div class="form-group">
+                <label>{{ field.label }}</label>
+                {{ field }}
+                {{ field.errors }}
+            </div>
+            {% endfor %}
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn-primary">Guardar</button>
+            <a href="{% url cancelar_url %}" class="btn-secondary">Cancelar</a>
+        </div>
+    </form>
+</section>
+{% endblock %}

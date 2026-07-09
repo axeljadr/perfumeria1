@@ -1,0 +1,140 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Pedido {{ pedido.folio }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/tablas.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="cotizacion-container">
+    <div class="cotizacion-header">
+        <div>
+            <p style="font-size:0.7rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--gris-claro);">Pedido</p>
+            <h1>{{ pedido.folio }}</h1>
+            <small>{{ pedido.cliente_nombre }} · {{ pedido.cliente_telefono }}</small>
+        </div>
+        <div class="cotizacion-acciones" style="flex-direction:column;align-items:flex-end;gap:0.5rem;">
+            <span style="font-size:0.72rem;letter-spacing:0.15em;text-transform:uppercase;">
+                Estado: <strong>{{ pedido.get_estado_display }}</strong>
+            </span>
+            {% if pedido.estado != 'entregado' and pedido.estado != 'cancelado' %}
+            <a href="{% url 'apartados:registrar_pago' pedido.pk %}" class="btn-primary btn-sm">Registrar pago</a>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if pedido.cliente_ref or pedido.notas %}
+    <div style="background:var(--blanco);border:1px solid #e0e0e0;padding:1.2rem;margin-bottom:1.5rem;font-size:0.85rem;line-height:1.6;">
+        {% if pedido.cliente_ref %}<p><strong>Referencia:</strong> {{ pedido.cliente_ref }}</p>{% endif %}
+        {% if pedido.notas %}<p><strong>Notas:</strong> {{ pedido.notas }}</p>{% endif %}
+    </div>
+    {% endif %}
+
+    <h3 style="font-family:var(--font-serif);font-size:1rem;letter-spacing:0.15em;text-transform:uppercase;margin-bottom:1rem;">Productos</h3>
+    <div class="tabla-wrapper">
+        <table class="tabla-cotizacion">
+            <thead>
+                <tr>
+                    <th class="th-perfume">Presentación</th>
+                    <th>Cantidad</th>
+                    <th>Precio unitario</th>
+                    <th>Subtotal</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in pedido.items.all %}
+                <tr>
+                    <td class="td-perfume">{{ item.presentacion }}</td>
+                    <td>{{ item.cantidad }}</td>
+                    <td>${{ item.precio_unitario|floatformat:2 }}</td>
+                    <td>${{ item.subtotal|floatformat:2 }}</td>
+                </tr>
+                {% endfor %}
+                <tr class="fila-total">
+                    <td colspan="3" style="text-align:right;padding-right:1.5rem;">Total del pedido</td>
+                    <td class="total-col">${{ pedido.total|floatformat:2 }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <h3 style="font-family:var(--font-serif);font-size:1rem;letter-spacing:0.15em;text-transform:uppercase;margin:2rem 0 1rem;">Pagos</h3>
+    <div class="tabla-wrapper">
+        <table class="tabla-cotizacion">
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Monto</th>
+                    <th>Método</th>
+                    <th>Comprobante</th>
+                    <th>Observaciones</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for pago in pedido.pagos.all %}
+                <tr>
+                    <td>{{ pago.fecha|date:"d/m/Y" }}</td>
+                    <td style="color:#2d6a2d;font-weight:600;">${{ pago.monto|floatformat:2 }}</td>
+                    <td>{{ pago.get_metodo_display }}</td>
+                    <td>
+                        {% if pago.comprobante %}
+                        <a href="{{ pago.comprobante.url }}" target="_blank" style="font-size:0.72rem;">Ver imagen</a>
+                        {% else %}—{% endif %}
+                    </td>
+                    <td style="font-size:0.78rem;color:var(--gris-medio);">{{ pago.observaciones|default:"—" }}</td>
+                    <td>
+                        <form method="post" action="{% url 'apartados:eliminar_pago' pago.pk %}" onsubmit="return confirm('¿Eliminar este pago?');" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn-quitar">×</button>
+                        </form>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="sin-resultados" style="text-align:center;padding:2rem;">Sin pagos registrados.</td>
+                </tr>
+                {% endfor %}
+                <tr class="fila-total">
+                    <td style="text-align:right;padding-right:1.5rem;">Total pagado</td>
+                    <td class="total-col">${{ pedido.total_pagado|floatformat:2 }}</td>
+                    <td colspan="4"></td>
+                </tr>
+                <tr class="fila-total" style="background:#fffdf5;">
+                    <td style="text-align:right;padding-right:1.5rem;">Saldo</td>
+                    <td style="color:var(--dorado);font-family:var(--font-serif);font-size:1.1rem;">${{ pedido.saldo|floatformat:2 }}</td>
+                    <td colspan="4"></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    {% if pedido.estado != 'cancelado' %}
+    <div style="margin-top:2rem;display:flex;gap:1rem;flex-wrap:wrap;">
+        {% if pedido.estado == 'abierto' %}
+        <form method="post" action="{% url 'apartados:cambiar_estado' pedido.pk %}" style="display:inline;">
+            {% csrf_token %}
+            <input type="hidden" name="estado" value="cancelado">
+            <button type="submit" class="btn-secondary">Marcar cancelado</button>
+        </form>
+        {% endif %}
+        {% if pedido.estado == 'liquidado' %}
+        <form method="post" action="{% url 'apartados:cambiar_estado' pedido.pk %}" style="display:inline;">
+            {% csrf_token %}
+            <input type="hidden" name="estado" value="entregado">
+            <button type="submit" class="btn-primary">Entregar perfume</button>
+        </form>
+        {% endif %}
+        {% if pedido.estado == 'abierto' and pedido.saldo <= 0 %}
+        <form method="post" action="{% url 'apartados:cambiar_estado' pedido.pk %}" style="display:inline;">
+            {% csrf_token %}
+            <input type="hidden" name="estado" value="liquidado">
+            <button type="submit" class="btn-primary">Confirmar liquidación</button>
+        </form>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

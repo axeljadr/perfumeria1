@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% load static %}
+<head>
+    {% block title %}Familia {% endblock %}
+    {% block extra_css %}
+    <link rel="stylesheet" href="{% static '/css/formularios.css' %}">
+    {% endblock %}
+</head>
+{% block content %}
+<section class="gestion-container">
+    <div class="gestion-header">
+        <h1>Familias Olfativas</h1>
+    </div>
+
+    <div class="gestion-layout">
+
+        <!-- Formulario agregar -->
+        <div class="gestion-form">
+            <h3>Nueva familia</h3>
+            <form method="POST">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label>Nombre</label>
+                    {{ form.nombre }}
+                    {{ form.nombre.errors }}
+                </div>
+                <button type="submit" class="btn-primary">Agregar</button>
+            </form>
+        </div>
+
+        <!-- Lista -->
+        <div class="gestion-lista">
+            <h3>Familias registradas ({{ familias.count }})</h3>
+            {% for familia in familias %}
+            <div class="gestion-item">
+                <span>{{ familia.nombre }}</span>
+                <div class="item-acciones">
+                    <a href="{% url 'familia_editar' familia.pk %}">Editar</a>
+                    <a href="{% url 'familia_eliminar' familia.pk %}" class="accion-eliminar">Eliminar</a>
+                </div>
+            </div>
+            {% empty %}
+            <p class="sin-resultados">No hay familias registradas.</p>
+            {% endfor %}
+        </div>
+
+    </div>
+</section>
+{% endblock %}

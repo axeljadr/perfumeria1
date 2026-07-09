@@ -1,0 +1,311 @@
+/* ===== DETALLE PERFUME ===== */
+.detalle-container {
+    max-width: 1100px;
+    margin: 4rem auto;
+    padding: 0 2rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5rem;
+    align-items: start;
+}
+
+.detalle-imagen {
+    position: sticky;
+    top: 100px;
+}
+
+.detalle-imagen img {
+    width: 100%;
+    aspect-ratio: 3/4;
+    object-fit: cover;
+    background: #f3f3f3;
+}
+
+.sin-imagen.grande {
+    width: 100%;
+    aspect-ratio: 3/4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f3f3f3;
+    color: var(--gris-claro);
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.detalle-info {
+    padding: 1rem 0;
+}
+
+.detalle-marca {
+    display: block;
+    font-size: 0.7rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--gris-medio);
+    margin-bottom: 0.6rem;
+}
+
+.detalle-nombre {
+    font-family: var(--font-serif);
+    font-size: 3rem;
+    font-weight: 300;
+    line-height: 1.1;
+    margin-bottom: 0.5rem;
+}
+
+.detalle-genero {
+    display: block;
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gris-claro);
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #ebebeb;
+}
+
+.detalle-descripcion {
+    font-size: 0.9rem;
+    color: var(--gris-oscuro);
+    line-height: 1.8;
+    margin-bottom: 2rem;
+}
+
+/* ===== SELECTOR DE PRESENTACIONES ===== */
+.presentaciones-selector {
+    margin-bottom: 2rem;
+}
+
+.presentaciones-selector h3 {
+    font-family: var(--font-serif);
+    font-size: 0.75rem;
+    font-weight: 400;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gris-medio);
+    margin-bottom: 1rem;
+}
+
+.presentaciones-opciones {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-bottom: 1.2rem;
+}
+
+.btn-presentacion {
+    border: 1px solid #ddd;
+    background: var(--blanco);
+    padding: 0.6rem 1.2rem;
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+    line-height: 1.4;
+}
+
+.btn-presentacion:hover {
+    border-color: var(--negro);
+}
+
+.btn-presentacion.activo {
+    background: var(--negro);
+    color: var(--blanco);
+    border-color: var(--negro);
+}
+
+.precio-seleccionado {
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+    padding: 1rem 0;
+    border-top: 1px solid #ebebeb;
+}
+
+#precio-display {
+    font-family: var(--font-serif);
+    font-size: 2rem;
+    color: var(--dorado);
+}
+
+#stock-display {
+    font-size: 0.72rem;
+    color: var(--gris-claro);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+/* ===== PERFIL OLFATIVO ===== */
+.perfil-olfativo {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: var(--blanco);
+    border: 1px solid #ebebeb;
+}
+
+.perfil-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.perfil-label {
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gris-claro);
+}
+
+.perfil-item span:last-child {
+    font-size: 0.85rem;
+    color: var(--gris-oscuro);
+}
+
+/* ===== ACORDES Y NOTAS ===== */
+.acordes,
+.notas {
+    margin-bottom: 1.5rem;
+}
+
+.acordes h3,
+.notas h3 {
+    font-family: var(--font-serif);
+    font-size: 0.75rem;
+    font-weight: 400;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gris-medio);
+    margin-bottom: 0.8rem;
+}
+
+.acordes-lista,
+.notas-lista {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.tag-acorde,
+.tag-nota {
+    font-size: 0.7rem;
+    border: 1px solid #ddd;
+    padding: 0.3rem 0.8rem;
+    letter-spacing: 0.08em;
+    color: var(--gris-oscuro);
+    background: var(--blanco);
+}
+
+/* ===== ADMIN PRESENTACIONES ===== */
+.presentaciones-admin {
+    margin-top: 2.5rem;
+    border: 1px solid #e0e0e0;
+    background: var(--blanco);
+}
+
+.admin-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.2rem;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.admin-header h3 {
+    font-family: var(--font-serif);
+    font-size: 0.75rem;
+    font-weight: 400;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+}
+
+.admin-lista {
+    padding: 0.3rem 0;
+}
+
+.admin-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.7rem 1.2rem;
+    border-bottom: 1px solid #f5f5f5;
+    gap: 1rem;
+}
+
+.admin-item:last-child {
+    border-bottom: none;
+}
+
+.admin-item-info {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    flex: 1;
+    flex-wrap: wrap;
+}
+
+.admin-item-nombre {
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.admin-item-precio {
+    font-family: var(--font-serif);
+    font-size: 1rem;
+    color: var(--dorado);
+}
+
+.admin-item-stock {
+    font-size: 0.72rem;
+    color: var(--gris-medio);
+}
+
+.admin-item-estado {
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gris-claro);
+}
+
+.admin-item-acciones {
+    display: flex;
+    gap: 1rem;
+}
+
+.admin-item-acciones a {
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--gris-medio);
+    transition: color 0.2s;
+}
+
+.admin-item-acciones a:hover {
+    color: var(--negro);
+}
+
+.accion-eliminar:hover {
+    color: #8b0000 !important;
+}
+
+@media (max-width: 900px) {
+    .detalle-container {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+
+    .detalle-imagen {
+        position: static;
+    }
+
+    .detalle-nombre {
+        font-size: 2.2rem;
+    }
+}

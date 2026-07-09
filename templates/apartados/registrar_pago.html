@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Registrar pago — {{ pedido.folio }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/formularios.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <p class="form-breadcrumb">
+        <a href="{% url 'apartados:detalle' pedido.pk %}">← {{ pedido.folio }}</a>
+    </p>
+    <h1>Registrar pago</h1>
+    <p style="color:var(--gris-claro);font-size:0.85rem;margin-bottom:2rem;">
+        Cliente: <strong>{{ pedido.cliente_nombre }}</strong> · 
+        Saldo actual: <strong style="color:var(--dorado);">${{ pedido.saldo|floatformat:2 }}</strong>
+    </p>
+
+    <form method="post" enctype="multipart/form-data" novalidate>
+        {% csrf_token %}
+        <div class="form-section">
+            {% for field in form %}
+            <div class="form-group">
+                {{ field.label_tag }}
+                {{ field }}
+                {% if field.errors %}<ul class="errorlist">{% for e in field.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn-primary">Guardar pago</button>
+            <a href="{% url 'apartados:detalle' pedido.pk %}" class="btn-secondary">Cancelar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

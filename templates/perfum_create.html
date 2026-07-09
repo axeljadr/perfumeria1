@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+{% load static %}
+<head>
+    {% block title %}{% if editando %}Editar {{ perfume.nombre }}{% else %}Nuevo Perfume{% endif %}{% endblock %}
+    {% block extra_css %}
+    <link rel="stylesheet" href="{% static '/css/formularios.css' %}">
+    {% endblock %}
+</head>
+
+{% block content %}
+<section class="form-container">
+    <h1>{% if editando %}Editar {{ perfume.nombre }}{% else %}Nuevo Perfume{% endif %}</h1>
+
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <div class="form-section">
+            <h3>Información básica</h3>
+            <div class="form-group">
+                <label>Nombre</label>
+                {{ form.nombre }}
+                {{ form.nombre.errors }}
+            </div>
+            <div class="form-group">
+                <label>Marca</label>
+                {{ form.marca }}
+                {{ form.marca.errors }}
+            </div>
+            <div class="form-group">
+                <label>Género</label>
+                {{ form.genero }}
+                {{ form.genero.errors }}
+            </div>
+            <div class="form-group">
+                <label>Descripción</label>
+                {{ form.descripcion }}
+                {{ form.descripcion.errors }}
+            </div>
+            <div class="form-group">
+                <label>Imagen de portada</label>
+                {{ form.imagen_portada }}
+                {{ form.imagen_portada.errors }}
+            </div>
+            <div class="form-group">
+                <label>Activo</label>
+                {{ form.activo }}
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h3>Clasificación olfativa</h3>
+            <div class="form-group">
+                <label>Familia olfativa</label>
+                {{ form.familia_olfativa }}
+                {{ form.familia_olfativa.errors }}
+            </div>
+            <div class="form-group">
+                <label>Acordes</label>
+                <div class="checkbox-group">{{ form.acordes }}</div>
+            </div>
+            <div class="form-group">
+                <label>Notas</label>
+                <div class="checkbox-group">{{ form.notas }}</div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h3>Perfil olfativo</h3>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Longevidad</label>
+                    {{ form.longevidad }}
+                </div>
+                <div class="form-group">
+                    <label>Estela</label>
+                    {{ form.estela }}
+                </div>
+                <div class="form-group">
+                    <label>Uso</label>
+                    {{ form.uso }}
+                </div>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn-primary">
+                {% if editando %}Guardar cambios{% else %}Crear perfume{% endif %}
+            </button>
+            <a href="{% url 'catalogo' %}" class="btn-secondary">Cancelar</a>
+        </div>
+    </form>
+</section>
+{% endblock %}

@@ -1,0 +1,49 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Arabes en Reynosa{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Montserrat:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<nav class="navbar">
+    <div class="nav-container">
+        <a href="{% url 'catalogo' %}" class="nav-logo">
+            <img src="{% static '/img/logooficial.png' %}" alt="Arabes en Reynosa">
+        </a>
+        <ul class="nav-links">
+            <li><a href="{% url 'catalogo' %}">Catálogo</a></li>
+            {% if request.user.is_staff %}
+            <li><a href="{% url 'familias_lista' %}">Familias</a></li>
+            <li><a href="{% url 'acordes_lista' %}">Acordes</a></li>
+            <li><a href="{% url 'notas_lista' %}">Notas</a></li>
+            <li><a href="{% url 'crear_perfume' %}" class="btn-nav">+ Nuevo Perfume</a></li>
+            <li><a href="{% url 'cotizaciones_lista' %}">Cotizaciones</a></li>
+            <li><a href="{% url 'proveedores_lista' %}">Proveedores</a></li>
+            <li><a href="{% url 'apartados:lista_pedidos' %}">Pedidos</a></li>
+            {% endif %}
+        </ul>
+    </div>
+</nav>
+
+<main class="main-content">
+    {% block content %}{% endblock %}
+</main>
+
+<footer class="footer">
+    <div class="footer-container">
+        <img src="{% static '/img/logooficial.png' %}" alt="Arabes en Reynosa" class="footer-logo">
+        <p>© 2025 Arabes en Reynosa — Perfumería de lujo</p>
+    </div>
+</footer>
+
+<script src="{% static '/js/main.js' %}"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

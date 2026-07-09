@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% load static %}
+<head>
+    {% block title %}Proveedores{% endblock %}
+    {% block extra_css %}
+    <link rel="stylesheet" href="{% static '/css/formularios.css' %}">
+    {% endblock %}
+</head>
+{% block content %}
+<section class="gestion-container">
+    <div class="gestion-header">
+        <h1>Proveedores</h1>
+    </div>
+
+    <div class="gestion-layout">
+        <div class="gestion-form">
+            <h3>Nuevo proveedor</h3>
+            <form method="POST">
+                {% csrf_token %}
+                {% for field in form %}
+                <div class="form-group">
+                    <label>{{ field.label }}</label>
+                    {{ field }}
+                    {{ field.errors }}
+                </div>
+                {% endfor %}
+                <button type="submit" class="btn-primary">Agregar</button>
+            </form>
+        </div>
+
+        <div class="gestion-lista">
+            <h3>Proveedores registrados ({{ proveedores.count }})</h3>
+            {% for p in proveedores %}
+            <div class="gestion-item">
+                <div style="flex:1">
+                    <span>{{ p.nombre }}</span>
+                    {% if p.telefono %}
+                    <small style="display:block; color:var(--gris-claro);">{{ p.telefono }}</small>
+                    {% endif %}
+                </div>
+                <div class="item-acciones">
+                    <a href="{% url 'proveedor_editar' p.pk %}">Editar</a>
+                    <a href="{% url 'proveedor_eliminar' p.pk %}" class="accion-eliminar">Eliminar</a>
+                </div>
+            </div>
+            {% empty %}
+            <p class="sin-resultados">No hay proveedores registrados.</p>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}

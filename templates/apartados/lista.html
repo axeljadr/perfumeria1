@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Pedidos — Apartados{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/tablas.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="cotizacion-container">
+    <div class="cotizacion-header">
+        <div>
+            <p style="font-size:0.7rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--gris-claro);">Módulo</p>
+            <h1>Pedidos</h1>
+        </div>
+        <div class="cotizacion-acciones">
+            <a href="{% url 'apartados:crear' %}" class="btn-primary">Nuevo pedido</a>
+        </div>
+    </div>
+
+    <div style="margin-bottom:1.5rem;display:flex;gap:1rem;flex-wrap:wrap;">
+        <a href="{% url 'apartados:lista_pedidos' %}" class="btn-sm {% if not estado_actual %}btn-primary{% else %}btn-secondary{% endif %}">Todos</a>
+        <a href="?estado=abierto" class="btn-sm {% if estado_actual == 'abierto' %}btn-primary{% else %}btn-secondary{% endif %}">Abiertos</a>
+        <a href="?estado=liquidado" class="btn-sm {% if estado_actual == 'liquidado' %}btn-primary{% else %}btn-secondary{% endif %}">Liquidados</a>
+        <a href="?estado=entregado" class="btn-sm {% if estado_actual == 'entregado' %}btn-primary{% else %}btn-secondary{% endif %}">Entregados</a>
+        <a href="?estado=cancelado" class="btn-sm {% if estado_actual == 'cancelado' %}btn-primary{% else %}btn-secondary{% endif %}">Cancelados</a>
+    </div>
+
+    <div class="tabla-wrapper">
+        <table class="tabla-cotizacion">
+            <thead>
+                <tr>
+                    <th class="th-perfume">Folio / Cliente</th>
+                    <th>Estado</th>
+                    <th>Total</th>
+                    <th>Pagado</th>
+                    <th>Saldo</th>
+                    <th>Fecha</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in pedidos %}
+                <tr>
+                    <td class="td-perfume">
+                        <strong>{{ p.folio }}</strong><br>
+                        <span style="font-size:0.78rem;color:var(--gris-medio);">{{ p.cliente_nombre }}</span>
+                    </td>
+                    <td>
+                        <span style="font-size:0.65rem;letter-spacing:0.15em;text-transform:uppercase;">
+                            {{ p.get_estado_display }}
+                        </span>
+                    </td>
+                    <td>${{ p.total|floatformat:2 }}</td>
+                    <td style="color:#2d6a2d;">${{ p.total_pagado|floatformat:2 }}</td>
+                    <td style="color:var(--dorado);">${{ p.saldo|floatformat:2 }}</td>
+                    <td style="font-size:0.78rem;color:var(--gris-claro);">{{ p.fecha_creacion|date:"d/m/Y" }}</td>
+                    <td>
+                        <a href="{% url 'apartados:detalle' p.pk %}" class="btn-sm btn-secondary">Ver</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="sin-resultados" style="text-align:center;padding:2rem;">Sin pedidos registrados.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,207 @@
+/* ===== COTIZACIONES LISTA ===== */
+.cotizacion-container {
+    max-width: 1300px;
+    margin: 3rem auto;
+    padding: 0 2rem;
+}
+
+.cotizacion-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 2rem;
+    padding-bottom: 1.2rem;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.cotizacion-header h1 {
+    font-family: var(--font-serif);
+    font-size: 2.2rem;
+    font-weight: 300;
+    margin: 0.3rem 0;
+}
+
+.cotizacion-header small {
+    color: var(--gris-claro);
+    font-size: 0.78rem;
+}
+
+.cotizacion-acciones {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+/* ===== TABLA ===== */
+.tabla-wrapper {
+    overflow-x: auto;
+    border: 1px solid #e0e0e0;
+    margin-bottom: 1.5rem;
+    background: var(--blanco);
+}
+
+.tabla-cotizacion {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.83rem;
+    background: var(--blanco);
+}
+
+.tabla-cotizacion th {
+    background: var(--negro);
+    color: var(--blanco);
+    padding: 0.9rem 1rem;
+    text-align: center;
+    font-family: var(--font-sans);
+    font-weight: 400;
+    letter-spacing: 0.12em;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.th-perfume {
+    text-align: left !important;
+    min-width: 180px;
+}
+
+.th-acciones {
+    width: 40px;
+}
+
+.tabla-cotizacion td {
+    padding: 0.65rem 0.9rem;
+    border-bottom: 1px solid #f0f0f0;
+    border-right: 1px solid #f5f5f5;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.td-perfume {
+    text-align: left !important;
+    font-weight: 500;
+    white-space: nowrap;
+    font-size: 0.85rem;
+}
+
+.td-label {
+    text-align: left !important;
+    font-size: 0.68rem;
+    color: var(--gris-claro);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.fila-envio {
+    background: #fafafa;
+}
+
+.fila-total {
+    background: #f5f5f5;
+    font-weight: 600;
+    font-family: var(--font-serif);
+    font-size: 0.95rem;
+}
+
+.fila-total td {
+    border-top: 2px solid var(--negro);
+    padding: 0.9rem;
+}
+
+.total-col {
+    color: var(--dorado);
+}
+
+/* ===== INPUTS DE CELDA ===== */
+.celda-input {
+    width: 90px;
+    border: 1px solid #e0e0e0;
+    padding: 0.4rem 0.5rem;
+    text-align: center;
+    font-family: var(--font-sans);
+    font-size: 0.82rem;
+    background: var(--blanco);
+    transition: border-color 0.2s, background 0.2s;
+    outline: none;
+}
+
+.celda-input:focus {
+    border-color: var(--dorado);
+    background: #fffdf7;
+}
+
+.envio-input {
+    background: #fafafa;
+}
+
+/* ===== MEJOR PRECIO ===== */
+.mejor-precio {
+    background: #f0f9f0 !important;
+    font-weight: 600;
+    color: #2d6a2d;
+}
+
+/* ===== BOTÓN QUITAR ===== */
+.btn-quitar {
+    background: none;
+    border: none;
+    color: #ccc;
+    cursor: pointer;
+    font-size: 0.7rem;
+    padding: 0 0.3rem;
+    margin-left: 0.4rem;
+    transition: color 0.2s;
+    vertical-align: middle;
+}
+
+.btn-quitar:hover {
+    color: #8b0000;
+}
+
+/* ===== FOOTER TABLA ===== */
+.tabla-footer {
+    margin: 1rem 0 2rem;
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+/* ===== AGREGAR FILA / COLUMNA ===== */
+.agregar-fila,
+.agregar-columna {
+    margin-top: 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    flex-wrap: wrap;
+}
+
+.form-inline {
+    display: flex;
+    gap: 0.8rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.agregar-columna p {
+    font-size: 0.78rem;
+    color: var(--gris-claro);
+    margin-top: 0.5rem;
+}
+
+.agregar-columna a {
+    color: var(--negro);
+    text-decoration: underline;
+    font-size: 0.78rem;
+}
+
+@media (max-width: 768px) {
+    .cotizacion-header {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .celda-input {
+        width: 70px;
+    }
+}

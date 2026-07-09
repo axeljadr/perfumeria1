@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% block title %}{% if editando %}Editar presentación{% else %}Nueva presentación{% endif %}{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static '/css/formularios.css' %}">
+{% endblock %}
+{% block content %}
+<section class="form-container">
+    <div class="form-breadcrumb">
+        <a href="{% url 'detalle_perfume' perfume.pk %}">← {{ perfume.marca }} {{ perfume.nombre }}</a>
+    </div>
+
+    <h1>{% if editando %}Editar presentación{% else %}Nueva presentación{% endif %}</h1>
+
+    <form method="POST">
+        {% csrf_token %}
+        <div class="form-section">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Tipo</label>
+                    {{ form.tipo }}
+                    {{ form.tipo.errors }}
+                </div>
+                <div class="form-group">
+                    <label>Volumen / Descripción</label>
+                    {{ form.volumen_ml }}
+                    {{ form.volumen_ml.errors }}
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Precio (MXN)</label>
+                    {{ form.precio }}
+                    {{ form.precio.errors }}
+                </div>
+                <div class="form-group">
+                    <label>Stock</label>
+                    {{ form.stock }}
+                    {{ form.stock.errors }}
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Activo</label>
+                {{ form.activo }}
+            </div>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn-primary">
+                {% if editando %}Guardar cambios{% else %}Agregar presentación{% endif %}
+            </button>
+            <a href="{% url 'detalle_perfume' perfume.pk %}" class="btn-secondary">Cancelar</a>
+        </div>
+    </form>
+</section>
+{% endblock %}

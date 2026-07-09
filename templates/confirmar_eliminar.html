@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block title %}Eliminar{% endblock %}
+
+{% block content %}
+<section class="form-container">
+    <div class="form-section" style="text-align:center; padding: 3rem;">
+        <h2 style="font-family: var(--font-serif); font-weight:300; margin-bottom:1rem;">
+            ¿Eliminar "{{ objeto }}"?
+        </h2>
+        <p style="color: var(--gris-claro); margin-bottom: 2rem; font-size:0.9rem;">
+            Esta acción no se puede deshacer.
+        </p>
+        <form method="POST">
+            {% csrf_token %}
+            <button type="submit" class="btn-primary" style="background:#8b0000;">Sí, eliminar</button>
+            {% if cancelar_pk %}
+            <a href="{% url cancelar_url cancelar_pk %}" class="btn-secondary" style="margin-left:1rem;">Cancelar</a>
+            {% else %}
+            <a href="{% url cancelar_url %}" class="btn-secondary" style="margin-left:1rem;">Cancelar</a>
+            {% endif %}
+        </form>
+    </div>
+</section>
+{% endblock %}
