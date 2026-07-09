@@ -1,0 +1,13 @@
+# Configuración para scripts de shell (obligatorio LF)
+*.sh text eol=lf
+
+# Configuración para archivos normales (Django)
+*.py text eol=lf
+*.html text eol=lf
+*.css text eol=lf
+*.js text eol=lf
+
+# Archivos binarios que no deben ser tocados
+*.png binary
+*.jpg binary
+*.ico binary
