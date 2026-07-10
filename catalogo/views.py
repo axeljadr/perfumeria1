@@ -1,35 +1,80 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.admin.views.decorators import staff_member_required
-from django.db.models import Q
+from django.db.models import Q, Case, When, Value, BooleanField
 from .models import Perfume, FamiliaOlfativa, Acorde, Nota, Presentacion
 from .forms import PerfumeForm, FamiliaOlfativaForm, AcordeForm, NotaForm, PresentacionForm
+from django.shortcuts import render
+from django.utils import timezone
+from datetime import timedelta
 
 
 def catalogo(request):
-    perfumes = Perfume.objects.filter(activo=True).prefetch_related('presentaciones')
+    # Obtener todos los perfumes activos
+    perfumes = Perfume.objects.filter(activo=True)
+    
+    # Calcular fecha límite
+    hace_7_dias = timezone.now() - timedelta(days=7)
+    
+    # Añadir campo virtual es_nuevo usando annotate
+    perfumes = perfumes.annotate(
+        es_nuevo=Case(
+            When(creado_en__gte=hace_7_dias, then=Value(True)),
+            default=Value(False),
+            output_field=BooleanField()
+        )
+    )
+    
+    # Filtros
+    q = request.GET.get('q')
+    if q:
+        perfumes = perfumes.filter(nombre__icontains=q) | perfumes.filter(marca__icontains=q)
 
-    genero   = request.GET.get('genero')
-    familia  = request.GET.get('familia')
-    acorde   = request.GET.get('acorde')
-    busqueda = request.GET.get('q')
-
+    genero = request.GET.get('genero')
     if genero:
         perfumes = perfumes.filter(genero=genero)
-    if familia:
-        perfumes = perfumes.filter(familia_olfativa__id=familia)
-    if acorde:
-        perfumes = perfumes.filter(acordes__id=acorde)
-    if busqueda:
-        perfumes = perfumes.filter(
-            Q(nombre__icontains=busqueda) | Q(marca__icontains=busqueda)
-        )
 
-    return render(request, 'catalogo.html', {
-        'perfumes': perfumes,
+    familia = request.GET.get('familia')
+    if familia and familia.isdigit():
+        perfumes = perfumes.filter(familia_olfativa_id=familia)
+
+    # Acordes (múltiple)
+    acordes_ids = request.GET.getlist('acorde')
+    acordes_ids = [id for id in acordes_ids if id and id.isdigit()]
+    if acordes_ids:
+        perfumes = perfumes.filter(acordes__id__in=acordes_ids).distinct()
+
+    longevidad = request.GET.get('longevidad')
+    if longevidad:
+        perfumes = perfumes.filter(longevidad=longevidad)
+
+    estela = request.GET.get('estela')
+    if estela:
+        perfumes = perfumes.filter(estela=estela)
+
+    uso = request.GET.get('uso')
+    if uso:
+        perfumes = perfumes.filter(uso=uso)
+
+    # Orden
+    orden = request.GET.get('orden')
+    if orden:
+        perfumes = perfumes.order_by(orden)
+    else:
+        perfumes = perfumes.order_by('-creado_en')
+
+    # Contexto
+    context = {
+        'perfumes': perfumes,  # Sigue siendo un queryset con el campo es_nuevo
+        'generos': Perfume.GENERO_CHOICES,
         'familias': FamiliaOlfativa.objects.all(),
         'acordes': Acorde.objects.all(),
-        'generos': Perfume.GENERO_CHOICES,
-    })
+        'acordes_seleccionados': acordes_ids,
+        'longevidad_opciones': Perfume.LONGEVIDAD_CHOICES,
+        'estela_opciones': Perfume.ESTELA_CHOICES,
+        'uso_opciones': Perfume.USO_CHOICES,
+    }
+    
+    return render(request, 'catalogo.html', context)
 
 
 def detalle_perfume(request, pk):

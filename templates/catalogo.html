@@ -2,56 +2,155 @@
 {% load static %}
 
 {% block title %}Catálogo — Arabes en Reynosa{% endblock %}
+
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/catalogo.css' %}">
+
 {% endblock %}
 
 {% block content %}
+<!-- DEBUG: Verificar CSS -->
+<div style="background: #4CAF50; color: white; padding: 10px; text-align: center; font-weight: bold; border-radius: 5px; margin-bottom: 20px;">
+    ✅ CSS INLINE CARGADO CORRECTAMENTE
+</div>
+
 <section class="catalogo-header">
     <h1>Catálogo de Fragancias</h1>
     <p>Descubre nuestra colección de perfumes árabes</p>
 </section>
 
-<section class="filtros">
-    <form method="GET" class="filtros-form">
-        <input type="text" name="q" placeholder="Buscar perfume o marca..."
-               value="{{ request.GET.q }}" class="filtro-input">
+<!-- CONTENEDOR DE BOTONES -->
+<div class="filtros-toggle-container">
+    <button class="toggle-filtros-btn" onclick="toggleFiltros()" aria-expanded="false">
+        <span class="icono-filtro">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m21 21-4.34-4.34"/>
+                <circle cx="11" cy="11" r="8"/>
+            </svg>
+        </span>
+        <span id="toggle-text">Mostrar filtros</span>
+        <span class="badge-filtros" id="badgeFiltros">0</span>
+        <span class="icono-flecha" id="toggle-icon">▼</span>
+    </button>
+    
+    {% if request.user.is_staff %}
+    <a href="{% url 'crear_perfume' %}" class="btn-nav">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 5v14"/>
+            <path d="M5 12h14"/>
+        </svg>
+        Nuevo Perfume
+    </a>
+    {% endif %}
+</div>
 
-        <select name="genero" class="filtro-select">
-            <option value="">Género</option>
-            {% for value, label in generos %}
-            <option value="{{ value }}" {% if request.GET.genero == value %}selected{% endif %}>
-                {{ label }}
-            </option>
-            {% endfor %}
-        </select>
+<!-- WRAPPER DE FILTROS -->
+<div class="filtros-wrapper" id="filtrosWrapper">
+    <section class="filtros">
+        <form method="GET" class="filtros-form" id="filtrosForm">
+            <!-- Búsqueda -->
+            <input type="text" name="q" placeholder="Buscar perfume o marca..."
+                   value="{{ request.GET.q }}" class="filtro-input">
 
-        <select name="familia" class="filtro-select">
-            <option value="">Familia olfativa</option>
-            {% for f in familias %}
-            <option value="{{ f.id }}" {% if request.GET.familia == f.id|stringformat:"s" %}selected{% endif %}>
-                {{ f.nombre }}
-            </option>
-            {% endfor %}
-        </select>
+            <!-- Género -->
+            <select name="genero" class="filtro-select">
+                <option value="">Género</option>
+                {% for value, label in generos %}
+                <option value="{{ value }}" {% if request.GET.genero == value %}selected{% endif %}>
+                    {{ label }}
+                </option>
+                {% endfor %}
+            </select>
 
-        <select name="acorde" class="filtro-select">
-            <option value="">Acorde</option>
-            {% for a in acordes %}
-            <option value="{{ a.id }}" {% if request.GET.acorde == a.id|stringformat:"s" %}selected{% endif %}>
-                {{ a.nombre }}
-            </option>
-            {% endfor %}
-        </select>
+            <!-- Familia -->
+            <select name="familia" class="filtro-select">
+                <option value="">Familia olfativa</option>
+                {% for f in familias %}
+                <option value="{{ f.id }}" {% if request.GET.familia == f.id|stringformat:"s" %}selected{% endif %}>
+                    {{ f.nombre }}
+                </option>
+                {% endfor %}
+            </select>
 
-        <button type="submit" class="btn-filtrar">Filtrar</button>
-        <a href="{% url 'catalogo' %}" class="btn-limpiar">Limpiar</a>
-    </form>
-</section>
+            <!-- Acordes múltiple -->
+            <select name="acorde" multiple class="filtro-select" size="4">
+                <option value="">— Todos los acordes —</option>
+                {% for a in acordes %}
+                <option value="{{ a.id }}"
+                        {% if a.id|stringformat:"s" in acordes_seleccionados %}selected{% endif %}>
+                    {{ a.nombre }}
+                </option>
+                {% endfor %}
+            </select>
+            <small class="help-text">Ctrl+clic para seleccionar múltiple</small>
 
+            <!-- Longevidad -->
+            <select name="longevidad" class="filtro-select">
+                <option value="">Longevidad</option>
+                {% for value, label in longevidad_opciones %}
+                <option value="{{ value }}" {% if request.GET.longevidad == value %}selected{% endif %}>
+                    {{ label }}
+                </option>
+                {% endfor %}
+            </select>
+
+            <!-- Estela -->
+            <select name="estela" class="filtro-select">
+                <option value="">Estela</option>
+                {% for value, label in estela_opciones %}
+                <option value="{{ value }}" {% if request.GET.estela == value %}selected{% endif %}>
+                    {{ label }}
+                </option>
+                {% endfor %}
+            </select>
+
+            <!-- Uso -->
+            <select name="uso" class="filtro-select">
+                <option value="">Uso</option>
+                {% for value, label in uso_opciones %}
+                <option value="{{ value }}" {% if request.GET.uso == value %}selected{% endif %}>
+                    {{ label }}
+                </option>
+                {% endfor %}
+            </select>
+
+            <!-- ORDEN -->
+            <select name="orden" class="filtro-select">
+                <option value="">Ordenar por</option>
+                <option value="nombre" {% if request.GET.orden == "nombre" %}selected{% endif %}>Nombre (A-Z)</option>
+                <option value="-nombre" {% if request.GET.orden == "-nombre" %}selected{% endif %}>Nombre (Z-A)</option>
+                <option value="marca" {% if request.GET.orden == "marca" %}selected{% endif %}>Marca (A-Z)</option>
+                <option value="-marca" {% if request.GET.orden == "-marca" %}selected{% endif %}>Marca (Z-A)</option>
+                <option value="-creado_en" {% if request.GET.orden == "-creado_en" %}selected{% endif %}>Más reciente</option>
+                <option value="creado_en" {% if request.GET.orden == "creado_en" %}selected{% endif %}>Más antiguo</option>
+            </select>
+
+            <button type="submit" class="btn-filtrar">Filtrar</button>
+            <a href="{% url 'catalogo' %}" class="btn-limpiar">Limpiar</a>
+        </form>
+    </section>
+</div>
+
+<!-- RESULTADOS INFO -->
+<div class="resultados-info">
+    <div class="contador">
+        <strong>{{ perfumes.count }}</strong> perfume{% if perfumes.count != 1 %}s{% endif %} encontrado{% if perfumes.count != 1 %}s{% endif %}
+        {% if request.GET.q or request.GET.genero or request.GET.familia or request.GET.acorde or request.GET.longevidad or request.GET.estela or request.GET.uso or request.GET.orden %}
+        <span style="color: #999; font-size: 0.85rem; font-weight: 400;">(con filtros)</span>
+        {% endif %}
+    </div>
+    <div class="filtros-activos" id="filtrosActivos">
+        <!-- Filtros activos -->
+    </div>
+</div>
+
+<!-- GRID DE PERFUMES -->
 <section class="perfumes-grid">
     {% for perfume in perfumes %}
     <div class="perfume-card-wrapper">
+        {% if perfume.es_nuevo %}
+            <span class="etiqueta-nuevo">NUEVO</span>
+        {% endif %}
         <a href="{% url 'detalle_perfume' perfume.pk %}" class="perfume-card">
             <div class="card-imagen">
                 {% if perfume.imagen_portada %}
@@ -86,7 +185,86 @@
         {% endif %}
     </div>
     {% empty %}
-    <p class="sin-resultados">No se encontraron perfumes con esos filtros.</p>
+    <p class="sin-resultados">
+        <span class="icono-grande">🔍</span>
+        No se encontraron perfumes con esos filtros.
+    </p>
     {% endfor %}
 </section>
+
+<script>
+    // Contar filtros activos
+    function contarFiltrosActivos() {
+        const params = new URLSearchParams(window.location.search);
+        let count = 0;
+        for (let [key, value] of params) {
+            if (key !== 'page' && value && value.trim() !== '') {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    // Actualizar badge
+    function actualizarBadge() {
+        const badge = document.getElementById('badgeFiltros');
+        const count = contarFiltrosActivos();
+        if (count > 0) {
+            badge.textContent = count;
+            badge.style.display = 'inline-block';
+        } else {
+            badge.textContent = '0';
+            badge.style.display = 'none';
+        }
+    }
+
+    // Toggle filtros
+    function toggleFiltros() {
+        const wrapper = document.getElementById('filtrosWrapper');
+        const btn = document.querySelector('.toggle-filtros-btn');
+        const text = document.getElementById('toggle-text');
+        const icon = document.getElementById('toggle-icon');
+        
+        wrapper.classList.toggle('abierto');
+        
+        if (wrapper.classList.contains('abierto')) {
+            text.textContent = 'Ocultar filtros';
+            icon.classList.add('rotado');
+            btn.setAttribute('aria-expanded', 'true');
+        } else {
+            text.textContent = 'Mostrar filtros';
+            icon.classList.remove('rotado');
+            btn.setAttribute('aria-expanded', 'false');
+        }
+    }
+
+    // Eliminar filtro específico
+    function eliminarFiltro(nombre) {
+        const url = new URL(window.location.href);
+        if (nombre === 'acorde') {
+            url.searchParams.delete('acorde');
+        } else {
+            url.searchParams.delete(nombre);
+        }
+        window.location.href = url.toString();
+    }
+
+    // Abrir filtros automáticamente si hay filtros activos
+    document.addEventListener('DOMContentLoaded', function() {
+        const tieneFiltros = contarFiltrosActivos() > 0;
+        actualizarBadge();
+        
+        if (tieneFiltros) {
+            const wrapper = document.getElementById('filtrosWrapper');
+            const btn = document.querySelector('.toggle-filtros-btn');
+            const text = document.getElementById('toggle-text');
+            const icon = document.getElementById('toggle-icon');
+            
+            wrapper.classList.add('abierto');
+            text.textContent = 'Ocultar filtros';
+            icon.classList.add('rotado');
+            btn.setAttribute('aria-expanded', 'true');
+        }
+    });
+</script>
 {% endblock %}
