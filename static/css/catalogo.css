@@ -1,497 +1,419 @@
-/* ===== HEADER CATÁLOGO ===== */
-.catalogo-header {
-    text-align: center;
-    padding: 5rem 2rem 3rem;
-    border-bottom: 1px solid #ebebeb;
-    background: var(--blanco);
-}
-
-.catalogo-header h1 {
-    font-family: var(--font-serif);
-    font-size: 3.5rem;
-    font-weight: 300;
-    letter-spacing: 0.05em;
-    margin-bottom: 0.5rem;
-}
-
-.catalogo-header p {
-    color: var(--gris-claro);
-    font-size: 0.8rem;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-}
-
-        /* Estilos para NUEVO */
-.etiqueta-nuevo {
-    background: linear-gradient(135deg, #ff0000, #cc0000);
-    color: #fff;
-    padding: 3px 10px;
-    border-radius: 4px;
-    font-size: 0.7em;
-    font-weight: bold;
-    display: inline-block;
-    margin-bottom: 5px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    box-shadow: 0 2px 4px rgba(255, 0, 0, 0.3);
-    animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-    0% {
-        opacity: 1;
-    }
-
-    50% {
-        opacity: 0.7;
-    }
-
-    100% {
-        opacity: 1;
-    }
-}
-
-/* Botón toggle filtros */
-/* CONTENEDOR DEL BOTÓN DE FILTROS - CENTRADO */
-.filtros-toggle-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 30px;
-    max-width: 800px;
-    margin: 30px auto 25px;
-    padding: 0 20px;
-    flex-wrap: wrap;
-}
-
-
-.btn-nav {
-    flex: none;
-}
-    
-    .toggle-filtros-btn {
-        background: #1a1a2e;
+    /* ========================================
+       ESTILOS DIRECTOS PARA FILTROS
+       (SIN DEPENDENCIAS EXTERNAS)
+       ======================================== */
+    .etiqueta-nuevo {
+        background: linear-gradient(135deg, #ff0000, #cc0000);
         color: #fff;
-        border: none;
-        padding: 14px 35px;
-        border-radius: 50px;
-        font-size: 1.05rem;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        display: inline-flex;
-        align-items: center;
-        gap: 12px;
-        font-weight: 500;
-        box-shadow: 0 4px 15px rgba(26, 26, 46, 0.3);
-        letter-spacing: 0.5px;
-        position: relative;
-        overflow: hidden;
-    }
-    
-    .toggle-filtros-btn::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-        transition: left 0.5s ease;
-    }
-    
-    .toggle-filtros-btn:hover::before {
-        left: 100%;
-    }
-    
-    .toggle-filtros-btn:hover {
-        background: #2a2a4e;
-        transform: translateY(-3px) scale(1.02);
-        box-shadow: 0 6px 25px rgba(26, 26, 46, 0.4);
-    }
-    
-    .toggle-filtros-btn:active {
-        transform: translateY(0) scale(0.98);
-    }
-    
-    .toggle-filtros-btn .icono-filtro {
-        font-size: 1.3em;
-        transition: transform 0.3s ease;
-    }
-    
-    .toggle-filtros-btn .icono-flecha {
-        font-size: 0.9em;
-        transition: transform 0.3s ease;
+        padding: 3px 10px;
+        border-radius: 4px;
+        font-size: 0.7em;
+        font-weight: bold;
         display: inline-block;
+        margin-bottom: 5px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        box-shadow: 0 2px 4px rgba(255, 0, 0, 0.3);
+        animation: pulse 2s infinite;
     }
-    
+
+    /* Reset de estilos para el contenedor */
+    .filtros-toggle-container {
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        gap: 30px !important;
+        max-width: 800px !important;
+        margin: 30px auto 25px !important;
+        padding: 0 20px !important;
+        flex-wrap: wrap !important;
+    }
+
+    /* BOTÓN TOGGLE FILTROS */
+    .toggle-filtros-btn {
+        background: #1a1a2e !important;
+        color: #ffffff !important;
+        border: none !important;
+        padding: 14px 35px !important;
+        border-radius: 50px !important;
+        font-size: 1.05rem !important;
+        cursor: pointer !important;
+        transition: all 0.3s ease !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 12px !important;
+        font-weight: 500 !important;
+        box-shadow: 0 4px 15px rgba(26, 26, 46, 0.3) !important;
+        letter-spacing: 0.5px !important;
+        position: relative !important;
+        overflow: hidden !important;
+        flex: none !important;
+        line-height: 1 !important;
+        font-family: 'Montserrat', sans-serif !important;
+    }
+
+    .toggle-filtros-btn::before {
+        content: '' !important;
+        position: absolute !important;
+        top: 0 !important;
+        left: -100% !important;
+        width: 100% !important;
+        height: 100% !important;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent) !important;
+        transition: left 0.5s ease !important;
+    }
+
+    .toggle-filtros-btn:hover::before {
+        left: 100% !important;
+    }
+
+    .toggle-filtros-btn:hover {
+        background: #2a2a4e !important;
+        transform: translateY(-3px) scale(1.02) !important;
+        box-shadow: 0 6px 25px rgba(26, 26, 46, 0.4) !important;
+    }
+
+    .toggle-filtros-btn:active {
+        transform: translateY(0) scale(0.98) !important;
+    }
+
+    .toggle-filtros-btn .icono-filtro {
+        display: inline-flex !important;
+        align-items: center !important;
+        line-height: 1 !important;
+    }
+
+    .toggle-filtros-btn .icono-filtro svg {
+        width: 20px !important;
+        height: 20px !important;
+        stroke: #ffffff !important;
+        stroke-width: 2.5 !important;
+        fill: none !important;
+        display: block !important;
+    }
+
+    .toggle-filtros-btn .icono-flecha {
+        font-size: 0.9em !important;
+        transition: transform 0.3s ease !important;
+        display: inline-block !important;
+    }
+
     .toggle-filtros-btn .icono-flecha.rotado {
-        transform: rotate(180deg);
+        transform: rotate(180deg) !important;
     }
-    
+
     .toggle-filtros-btn .badge-filtros {
-        background: rgba(255, 255, 255, 0.2);
-        padding: 2px 10px;
-        border-radius: 20px;
-        font-size: 0.75rem;
-        font-weight: 700;
-    }
-    
-/* WRAPPER DE FILTROS */
-.filtros-wrapper {
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease, margin 0.4s ease;
-    opacity: 0;
-    margin-bottom: 0;
-}
-
-.filtros-wrapper.abierto {
-    max-height: 2500px;
-    opacity: 1;
-    margin-bottom: 30px;
-}
-
-.filtros {
-    background: #f8f9fa;
-    padding: 30px;
-    border-radius: 12px;
-    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.08);
-    border: 1px solid #e8e8e8;
-}
-
-.filtros-form {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 18px;
-    align-items: end;
-}
-
-.filtro-input,
-.filtro-select {
-    width: 100%;
-    padding: 10px 14px;
-    border: 2px solid #e0e0e0;
-    border-radius: 8px;
-    font-size: 0.95rem;
-    transition: all 0.3s ease;
-    background: white;
-    color: #333;
-}
-
-.filtro-input:focus,
-.filtro-select:focus {
-    outline: none;
-    border-color: #1a1a2e;
-    box-shadow: 0 0 0 4px rgba(26, 26, 46, 0.1);
-}
-
-.filtro-input::placeholder {
-    color: #aaa;
-}
-
-.filtro-select[multiple] {
-    min-height: 90px;
-    padding: 6px;
-}
-
-.filtro-select[multiple] option {
-    padding: 4px 8px;
-    border-radius: 4px;
-}
-
-.filtro-select[multiple] option:checked {
-    background: #1a1a2e;
-    color: white;
-}
-
-.help-text {
-    font-size: 0.75rem;
-    color: #888;
-    margin-top: 4px;
-    display: block;
-    grid-column: 1 / -1;
-    text-align: center;
-}
-
-.btn-filtrar,
-.btn-limpiar {
-    padding: 12px 25px;
-    border: none;
-    border-radius: 8px;
-    font-size: 0.95rem;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.btn-filtrar {
-    background: #1a1a2e;
-    color: white;
-}
-
-.btn-filtrar:hover {
-    background: #2a2a4e;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(26, 26, 46, 0.3);
-}
-
-.btn-limpiar {
-    background: #e8e8e8;
-    color: #555;
-}
-
-.btn-limpiar:hover {
-    background: #d5d5d5;
-    transform: translateY(-2px);
-}
-
-/* RESULTADOS INFO */
-.resultados-info {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 15px;
-    margin-bottom: 30px;
-    padding: 18px 25px;
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-    border: 1px solid #f0f0f0;
-}
-
-.resultados-info .contador {
-    font-size: 1.1rem;
-    color: #555;
-}
-
-.resultados-info .contador strong {
-    color: #1a1a2e;
-    font-size: 1.4rem;
-    font-weight: 800;
-}
-
-.resultados-info .contador .highlight {
-    color: #1a1a2e;
-    font-weight: 600;
-}
-
-.resultados-info .filtros-activos {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    align-items: center;
-}
-
-.resultados-info .filtro-activo {
-    background: #1a1a2e;
-    color: white;
-    padding: 4px 14px;
-    border-radius: 20px;
-    font-size: 0.85rem;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    animation: fadeIn 0.3s ease;
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: scale(0.9);
+        background: rgba(255, 255, 255, 0.2) !important;
+        padding: 2px 10px !important;
+        border-radius: 20px !important;
+        font-size: 0.75rem !important;
+        font-weight: 700 !important;
+        min-width: 20px !important;
+        text-align: center !important;
+        display: inline-block !important;
     }
 
-    to {
-        opacity: 1;
-        transform: scale(1);
+    /* BOTÓN NUEVO PERFUME */
+    .btn-nav {
+        background: linear-gradient(135deg, #e6b17e, #d49a6a) !important;
+        color: #1a1a2e !important;
+        font-weight: 600 !important;
+        padding: 12px 28px !important;
+        border-radius: 50px !important;
+        text-decoration: none !important;
+        transition: all 0.3s ease !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        font-size: 0.95rem !important;
+        white-space: nowrap !important;
+        box-shadow: 0 4px 15px rgba(230, 177, 126, 0.3) !important;
+        border: none !important;
+        cursor: pointer !important;
+        flex: none !important;
+        font-family: 'Montserrat', sans-serif !important;
     }
-}
 
-.resultados-info .filtro-activo .eliminar {
-    cursor: pointer;
-    opacity: 0.7;
-    transition: all 0.3s ease;
-    font-weight: bold;
-    font-size: 1.1rem;
-    line-height: 1;
-    padding: 0 2px;
-}
-
-.resultados-info .filtro-activo .eliminar:hover {
-    opacity: 1;
-    transform: scale(1.2);
-    color: #ff6b6b;
-}
-
-
-.card-precio {
-    display: block;
-    font-size: 1.2rem;
-    font-weight: bold;
-    color: #1a1a2e;
-    margin-top: 8px;
-}
-
-.sin-resultados {
-    grid-column: 1 / -1;
-    text-align: center;
-    padding: 60px 20px;
-    color: #666;
-    font-size: 1.2rem;
-}
-
-.btn-editar {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background: rgba(0, 0, 0, 0.7);
-    color: white;
-    padding: 5px 12px;
-    border-radius: 20px;
-    font-size: 0.8rem;
-    text-decoration: none;
-    transition: background 0.3s ease;
-}
-
-.btn-editar:hover {
-    background: rgba(0, 0, 0, 0.9);
-}
-/*  GRID DE PERFUMES ===== */
-.perfumes-grid {
-    max-width: 1200px;
-    margin: 3rem auto;
-    padding: 0 2rem;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 3rem 2rem;
-}
-
-.perfume-card-wrapper {
-    position: relative;
-}
-
-.perfume-card {
-    text-decoration: none;
-    color: inherit;
-    display: block;
-    background: var(--blanco);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.perfume-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
-}
-
-.card-imagen {
-    aspect-ratio: 3/4;
-    overflow: hidden;
-    background: #f3f3f3;
-}
-
-.card-imagen img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.5s ease;
-}
-
-.perfume-card:hover .card-imagen img {
-    transform: scale(1.04);
-}
-
-.sin-imagen {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--gris-claro);
-    font-size: 0.75rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-}
-
-.card-info {
-    padding: 1.2rem 1rem;
-    text-align: center;
-}
-
-.card-marca {
-    display: block;
-    font-size: 0.65rem;
-    letter-spacing: 0.25em;
-    text-transform: uppercase;
-    color: var(--gris-medio);
-    margin-bottom: 0.4rem;
-}
-
-.card-nombre {
-    font-family: var(--font-serif);
-    font-size: 1.5rem;
-    font-weight: 400;
-    margin-bottom: 0.4rem;
-}
-
-.card-genero {
-    display: block;
-    font-size: 0.68rem;
-    color: var(--gris-claro);
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    margin-bottom: 0.8rem;
-}
-
-.card-presentaciones {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 0.4rem;
-    margin-bottom: 0.8rem;
-}
-
-.tag-presentacion {
-    font-size: 0.65rem;
-    border: 1px solid #ddd;
-    padding: 0.2rem 0.6rem;
-    letter-spacing: 0.08em;
-    color: var(--gris-medio);
-}
-
-.tag-presentacion.agotado {
-    color: var(--gris-claro);
-    border-color: #eee;
-    text-decoration: line-through;
-}
-
-    /* Responsive */
-@media (max-width: 768px) {
-.filtros-form {
-    grid-template-columns: 1fr;
-}
-
-.filtros {
-    padding: 15px;
-}
-
-.resultados-info {
-    flex-direction: column;
-    align-items: stretch;
-    text-align: center;
-}
-.resultados-info .filtros-activos {
-    justify-content: center;
-}
-}
-
-@media (max-width: 480px) {
-    .perfumes-grid {
-        grid-template-columns: 1fr 1fr;
-        gap: 15px;
+    .btn-nav:hover {
+        transform: translateY(-3px) !important;
+        box-shadow: 0 6px 25px rgba(230, 177, 126, 0.4) !important;
+        background: linear-gradient(135deg, #f0c8a0, #e6b17e) !important;
     }
-    .card-nombre {
-        font-size: 0.95rem;
+
+    .btn-nav:active {
+        transform: translateY(0) scale(0.98) !important;
     }
-}
+
+    .btn-nav svg {
+        width: 18px !important;
+        height: 18px !important;
+        stroke: #1a1a2e !important;
+        stroke-width: 2.5 !important;
+        fill: none !important;
+        display: block !important;
+    }
+
+    /* WRAPPER DE FILTROS */
+    .filtros-wrapper {
+        max-height: 0 !important;
+        overflow: hidden !important;
+        transition: max-height 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+            opacity 0.4s ease,
+            margin 0.4s ease !important;
+        opacity: 0 !important;
+        margin-bottom: 0 !important;
+    }
+
+    .filtros-wrapper.abierto {
+        max-height: 2500px !important;
+        opacity: 1 !important;
+        margin-bottom: 30px !important;
+    }
+
+    /* SECCIÓN DE FILTROS */
+    .filtros {
+        background: #f8f9fa !important;
+        padding: 30px !important;
+        border-radius: 12px !important;
+        box-shadow: 0 2px 15px rgba(0, 0, 0, 0.08) !important;
+        border: 1px solid #e8e8e8 !important;
+    }
+
+    .filtros-form {
+        display: grid !important;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)) !important;
+        gap: 18px !important;
+        align-items: end !important;
+    }
+
+    /* CAMPOS DE FILTRO */
+    .filtro-input,
+    .filtro-select {
+        width: 100% !important;
+        padding: 10px 14px !important;
+        border: 2px solid #e0e0e0 !important;
+        border-radius: 8px !important;
+        font-size: 0.95rem !important;
+        transition: all 0.3s ease !important;
+        background: white !important;
+        color: #333 !important;
+        font-family: 'Montserrat', sans-serif !important;
+    }
+
+    .filtro-input:focus,
+    .filtro-select:focus {
+        outline: none !important;
+        border-color: #1a1a2e !important;
+        box-shadow: 0 0 0 4px rgba(26, 26, 46, 0.1) !important;
+    }
+
+    .filtro-input::placeholder {
+        color: #aaa !important;
+    }
+
+    .filtro-select[multiple] {
+        min-height: 90px !important;
+        padding: 6px !important;
+    }
+
+    .filtro-select[multiple] option {
+        padding: 4px 8px !important;
+        border-radius: 4px !important;
+    }
+
+    .filtro-select[multiple] option:checked {
+        background: #1a1a2e !important;
+        color: white !important;
+    }
+
+    .help-text {
+        font-size: 0.75rem !important;
+        color: #888 !important;
+        margin-top: 4px !important;
+        display: block !important;
+        grid-column: 1 / -1 !important;
+        text-align: center !important;
+    }
+
+    /* BOTONES FILTRAR / LIMPIAR */
+    .btn-filtrar,
+    .btn-limpiar {
+        padding: 12px 25px !important;
+        border: none !important;
+        border-radius: 8px !important;
+        font-size: 0.95rem !important;
+        cursor: pointer !important;
+        transition: all 0.3s ease !important;
+        font-weight: 600 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.5px !important;
+        font-family: 'Montserrat', sans-serif !important;
+    }
+
+    .btn-filtrar {
+        background: #1a1a2e !important;
+        color: white !important;
+    }
+
+    .btn-filtrar:hover {
+        background: #2a2a4e !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 4px 12px rgba(26, 26, 46, 0.3) !important;
+    }
+
+    .btn-limpiar {
+        background: #e8e8e8 !important;
+        color: #555 !important;
+    }
+
+    .btn-limpiar:hover {
+        background: #d5d5d5 !important;
+        transform: translateY(-2px) !important;
+    }
+
+    /* RESULTADOS INFO */
+    .resultados-info {
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        flex-wrap: wrap !important;
+        gap: 15px !important;
+        margin-bottom: 30px !important;
+        padding: 18px 25px !important;
+        background: white !important;
+        border-radius: 12px !important;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05) !important;
+        border: 1px solid #f0f0f0 !important;
+    }
+
+    .resultados-info .contador {
+        font-size: 1.1rem !important;
+        color: #555 !important;
+        font-family: 'Montserrat', sans-serif !important;
+    }
+
+    .resultados-info .contador strong {
+        color: #1a1a2e !important;
+        font-size: 1.4rem !important;
+        font-weight: 800 !important;
+    }
+
+    .resultados-info .filtros-activos {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        gap: 8px !important;
+        align-items: center !important;
+    }
+
+    .resultados-info .filtro-activo {
+        background: #1a1a2e !important;
+        color: white !important;
+        padding: 4px 14px !important;
+        border-radius: 20px !important;
+        font-size: 0.85rem !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        animation: fadeIn 0.3s ease !important;
+        font-family: 'Montserrat', sans-serif !important;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: scale(0.9);
+        }
+
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    .resultados-info .filtro-activo .eliminar {
+        cursor: pointer !important;
+        opacity: 0.7 !important;
+        transition: all 0.3s ease !important;
+        font-weight: bold !important;
+        font-size: 1.1rem !important;
+        line-height: 1 !important;
+        padding: 0 2px !important;
+    }
+
+    .resultados-info .filtro-activo .eliminar:hover {
+        opacity: 1 !important;
+        transform: scale(1.2) !important;
+        color: #ff6b6b !important;
+    }
+
+    /* ========================================
+       RESPONSIVE
+       ======================================== */
+    @media (max-width: 768px) {
+        .filtros-toggle-container {
+            flex-direction: column !important;
+            align-items: stretch !important;
+            gap: 15px !important;
+            margin: 20px auto !important;
+            padding: 0 15px !important;
+        }
+
+        .toggle-filtros-btn {
+            width: 100% !important;
+            justify-content: center !important;
+            padding: 14px 20px !important;
+            font-size: 1rem !important;
+        }
+
+        .btn-nav {
+            width: 100% !important;
+            justify-content: center !important;
+            padding: 14px 20px !important;
+        }
+
+        .filtros-form {
+            grid-template-columns: 1fr !important;
+            gap: 15px !important;
+        }
+
+        .filtros {
+            padding: 20px 15px !important;
+        }
+
+        .resultados-info {
+            flex-direction: column !important;
+            align-items: stretch !important;
+            text-align: center !important;
+            padding: 15px 18px !important;
+        }
+
+        .resultados-info .filtros-activos {
+            justify-content: center !important;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .toggle-filtros-btn {
+            font-size: 0.9rem !important;
+            padding: 12px 16px !important;
+        }
+
+        .perfumes-grid {
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .card-nombre {
+            font-size: 0.95rem;
+        }
+
+        .toggle-filtros-btn .icono-filtro svg {
+            width: 18px !important;
+            height: 18px !important;
+        }
+
+        .btn-nav {
+            font-size: 0.9rem !important;
+            padding: 12px 16px !important;
+        }
+    }
