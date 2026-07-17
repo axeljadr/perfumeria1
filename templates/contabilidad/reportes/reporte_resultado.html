@@ -1,0 +1,52 @@
+{% extends 'contabilidad/base_contabilidad.html' %}
+
+{% block page_title %}{{ titulo }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-file-alt"></i> {{ titulo }}</h2>
+    <div>
+        <button onclick="window.print()" class="btn btn-secondary">
+            <i class="fas fa-print"></i> Imprimir
+        </button>
+        <a href="{% url 'contabilidad:reportes' %}" class="btn btn-primary">
+            <i class="fas fa-arrow-left"></i> Nuevo Reporte
+        </a>
+    </div>
+</div>
+
+<!-- Resumen del período -->
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <p class="mb-0">
+                    <strong><i class="fas fa-calendar-alt"></i> Período:</strong>
+                    {{ fecha_inicio|date:"d/m/Y" }} - {{ fecha_fin|date:"d/m/Y" }}
+                </p>
+            </div>
+            <div class="col-md-6 text-md-end">
+                <p class="mb-0">
+                    <strong><i class="fas fa-clock"></i> Generado:</strong>
+                    {{ hoy|date:"d/m/Y H:i" }}
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Contenido del reporte según tipo -->
+{% if tipo_reporte == 'compras' %}
+    {% include 'contabilidad/reportes/reporte_compras.html' %}
+{% elif tipo_reporte == 'movimientos' %}
+    {% include 'contabilidad/reportes/reporte_movimientos.html' %}
+{% elif tipo_reporte == 'inventario' %}
+    {% include 'contabilidad/reportes/reporte_inventario.html' %}
+{% elif tipo_reporte == 'utilidades' %}
+    {% include 'contabilidad/reportes/reporte_utilidades.html' %}
+{% else %}
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle"></i> No hay datos para mostrar
+    </div>
+{% endif %}
+{% endblock %}

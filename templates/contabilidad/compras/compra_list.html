@@ -1,0 +1,177 @@
+{% extends 'contabilidad/base_contabilidad.html' %}
+
+{% block page_title %}Gestión de Compras{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-shopping-cart"></i> Compras</h2>
+    <div>
+        <a href="{% url 'contabilidad:compra_create' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Nueva Compra
+        </a>
+    </div>
+</div>
+
+<!-- Filtros -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label">Estado</label>
+                <select name="estado" class="form-select">
+                    <option value="">Todos</option>
+                    <option value="en_proceso" {% if request.GET.estado == 'en_proceso' %}selected{% endif %}>En Proceso</option>
+                    <option value="completada" {% if request.GET.estado == 'completada' %}selected{% endif %}>Completada</option>
+                    <option value="cancelada" {% if request.GET.estado == 'cancelada' %}selected{% endif %}>Cancelada</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Perfume</label>
+                <select name="perfume" class="form-select">
+                    <option value="">Todos</option>
+                    {% for perfume in perfumes %}
+                    <option value="{{ perfume.id }}" {% if request.GET.perfume == perfume.id|stringformat:'s' %}selected{% endif %}>
+                        {{ perfume.nombre }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Fecha inicio</label>
+                <input type="date" name="fecha_inicio" class="form-control" value="{{ request.GET.fecha_inicio }}">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Fecha fin</label>
+                <input type="date" name="fecha_fin" class="form-control" value="{{ request.GET.fecha_fin }}">
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-secondary w-100">
+                    <i class="fas fa-search"></i> Filtrar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Resumen -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card card-stats border-primary">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="text-muted">Total Compras</h6>
+                        <h3>{{ total_compras }}</h3>
+                    </div>
+                    <div class="stat-icon text-primary">
+                        <i class="fas fa-shopping-cart"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card card-stats border-success">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="text-muted">Total Invertido</h6>
+                        <h3>${{ total_invertido|floatformat:2 }}</h3>
+                    </div>
+                    <div class="stat-icon text-success">
+                        <i class="fas fa-money-bill-wave"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card card-stats border-warning">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="text-muted">Pendientes</h6>
+                        <h3>{{ compras_pendientes|default:"0" }}</h3>
+                    </div>
+                    <div class="stat-icon text-warning">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tabla -->
+<div class="card">
+    <div class="card-body p-0">
+        <table class="table table-hover datatable">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Perfume</th>
+                    <th>Proveedor</th>
+                    <th>Cantidad</th>
+                    <th>Precio Unit.</th>
+                    <th>Costo Total</th>
+                    <th>Fecha</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for compra in compras %}
+                <tr>
+                    <td>#{{ compra.id }}</td>
+                    <td>
+                        <strong>{{ compra.perfume.nombre }}</strong>
+                        <br>
+                        <small class="text-muted">{{ compra.perfume.marca }}</small>
+                    </td>
+                    <td>{{ compra.proveedor|default:"-" }}</td>
+                    <td>{{ compra.cantidad_comprada }}</td>
+                    <td>${{ compra.precio_unitario }}</td>
+                    <td><strong>${{ compra.costo_total|floatformat:2 }}</strong></td>
+                    <td>{{ compra.fecha_compra|date:"d/m/Y" }}</td>
+                    <td>
+                        {% if compra.estado == 'completada' %}
+                            <span class="badge bg-success">
+                                <i class="fas fa-check-circle"></i> Completada
+                            </span>
+                        {% elif compra.estado == 'en_proceso' %}
+                            <span class="badge bg-warning text-dark">
+                                <i class="fas fa-spinner"></i> En Proceso
+                            </span>
+                        {% else %}
+                            <span class="badge bg-danger">
+                                <i class="fas fa-times-circle"></i> Cancelada
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'contabilidad:compra_detail' compra.pk %}" class="btn btn-sm btn-outline-primary" title="Ver">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                        {% if compra.estado == 'en_proceso' %}
+                            <a href="{% url 'contabilidad:compra_procesar' compra.pk %}" class="btn btn-sm btn-success" title="Procesar">
+                                <i class="fas fa-check"></i>
+                            </a>
+                            <a href="{% url 'contabilidad:compra_delete' compra.pk %}" class="btn btn-sm btn-danger" title="Eliminar">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="9" class="text-center text-muted py-4">
+                        <i class="fas fa-inbox fa-2x d-block mb-2"></i>
+                        No hay compras registradas
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

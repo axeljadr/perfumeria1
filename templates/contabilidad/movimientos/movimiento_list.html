@@ -1,0 +1,245 @@
+{% extends 'contabilidad/base_contabilidad.html' %}
+{% load static %}
+
+{% block page_title %}Movimientos Contables{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-coins"></i> Movimientos Contables</h2>
+    <div>
+        <a href="{% url 'contabilidad:movimiento_create' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Nuevo Movimiento
+        </a>
+    </div>
+</div>
+
+<!-- Filtros -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <div class="col-md-2">
+                <label class="form-label">Fecha inicio</label>
+                <input type="date" name="fecha_inicio" class="form-control" 
+                       value="{{ request.GET.fecha_inicio }}">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Fecha fin</label>
+                <input type="date" name="fecha_fin" class="form-control" 
+                       value="{{ request.GET.fecha_fin }}">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Concepto</label>
+                <select name="concepto" class="form-select">
+                    <option value="">Todos</option>
+                    {% for concepto in filtro_form.concepto.field.queryset %}
+                    <option value="{{ concepto.id }}" 
+                            {% if request.GET.concepto == concepto.id|stringformat:'s' %}selected{% endif %}>
+                        {{ concepto.nombre }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Tipo</label>
+                <select name="tipo" class="form-select">
+                    <option value="">Todos</option>
+                    <option value="ingreso" {% if request.GET.tipo == 'ingreso' %}selected{% endif %}>Ingreso</option>
+                    <option value="egreso" {% if request.GET.tipo == 'egreso' %}selected{% endif %}>Egreso</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Estado</label>
+                <select name="estado" class="form-select">
+                    <option value="">Todos</option>
+                    <option value="pendiente" {% if request.GET.estado == 'pendiente' %}selected{% endif %}>Pendiente</option>
+                    <option value="confirmado" {% if request.GET.estado == 'confirmado' %}selected{% endif %}>Confirmado</option>
+                    <option value="cancelado" {% if request.GET.estado == 'cancelado' %}selected{% endif %}>Cancelado</option>
+                </select>
+            </div>
+            <div class="col-md-1 d-flex align-items-end">
+                <button type="submit" class="btn btn-secondary w-100">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Tarjetas de resumen -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card card-stats border-success">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="text-muted">Total Ingresos</h6>
+                        <h3 class="text-success">${{ total_ingresos|floatformat:2 }}</h3>
+                    </div>
+                    <div class="stat-icon text-success">
+                        <i class="fas fa-arrow-up"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card card-stats border-danger">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="text-muted">Total Egresos</h6>
+                        <h3 class="text-danger">${{ total_egresos|floatformat:2 }}</h3>
+                    </div>
+                    <div class="stat-icon text-danger">
+                        <i class="fas fa-arrow-down"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card card-stats {% if balance >= 0 %}border-primary{% else %}border-warning{% endif %}">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="text-muted">Balance</h6>
+                        <h3 class="{% if balance >= 0 %}text-primary{% else %}text-warning{% endif %}">
+                            ${{ balance|floatformat:2 }}
+                        </h3>
+                    </div>
+                    <div class="stat-icon {% if balance >= 0 %}text-primary{% else %}text-warning{% endif %}">
+                        <i class="fas fa-balance-scale"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card card-stats border-info">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="text-muted">Total Movimientos</h6>
+                        <h3>{{ movimientos|length }}</h3>
+                    </div>
+                    <div class="stat-icon text-info">
+                        <i class="fas fa-list"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tabla de movimientos -->
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h6><i class="fas fa-list"></i> Movimientos</h6>
+        <div>
+            <a href="{% url 'contabilidad:reportes' %}?tipo=movimientos" class="btn btn-sm btn-outline-secondary">
+                <i class="fas fa-file-export"></i> Exportar
+            </a>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover datatable mb-0">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Concepto</th>
+                        <th>Descripción</th>
+                        <th>Cantidad</th>
+                        <th class="text-end">Monto</th>
+                        <th>Estado</th>
+                        <th>Referencia</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for movimiento in movimientos %}
+                    <tr>
+                        <td>{{ movimiento.fecha|date:"d/m/Y" }}</td>
+                        <td>
+                            <strong>{{ movimiento.concepto.nombre }}</strong>
+                            <br>
+                            <small class="text-muted">{{ movimiento.concepto.get_tipo_display }}</small>
+                        </td>
+                        <td>{{ movimiento.descripcion|default:"-"|truncatechars:40 }}</td>
+                        <td>{{ movimiento.cantidad }}</td>
+                        <td class="text-end {% if movimiento.es_ingreso %}text-success{% else %}text-danger{% endif %}">
+                            <strong>${{ movimiento.monto|floatformat:2 }}</strong>
+                        </td>
+                        <td>
+                            {% if movimiento.estado == 'confirmado' %}
+                                <span class="badge bg-success">
+                                    <i class="fas fa-check-circle"></i> Confirmado
+                                </span>
+                            {% elif movimiento.estado == 'pendiente' %}
+                                <span class="badge bg-warning text-dark">
+                                    <i class="fas fa-clock"></i> Pendiente
+                                </span>
+                            {% else %}
+                                <span class="badge bg-danger">
+                                    <i class="fas fa-times-circle"></i> Cancelado
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if movimiento.referencia_tipo %}
+                                <span class="badge bg-info">
+                                    {{ movimiento.referencia_tipo }} #{{ movimiento.referencia_id }}
+                                </span>
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{% url 'contabilidad:movimiento_update' movimiento.pk %}" 
+                                   class="btn btn-outline-primary" title="Editar">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="{% url 'contabilidad:movimiento_delete' movimiento.pk %}" 
+                                   class="btn btn-outline-danger" title="Eliminar">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center text-muted py-4">
+                            <i class="fas fa-inbox fa-3x d-block mb-3"></i>
+                            <p class="mb-0">No hay movimientos registrados</p>
+                            <a href="{% url 'contabilidad:movimiento_create' %}" class="btn btn-sm btn-primary mt-3">
+                                <i class="fas fa-plus"></i> Crear primer movimiento
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // Inicializar DataTable
+        $('.datatable').DataTable({
+            language: {
+                url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json'
+            },
+            pageLength: 25,
+            responsive: true,
+            order: [[0, 'desc']],
+            columnDefs: [
+                { orderable: false, targets: [7] }
+            ]
+        });
+    });
+</script>
+{% endblock %}

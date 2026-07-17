@@ -1,0 +1,143 @@
+{% extends 'contabilidad/base_contabilidad.html' %}
+
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Tarjetas de resumen -->
+    <div class="col-md-3 mb-4">
+        <div class="card card-stats border-success">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="text-muted">Ingresos del Mes</h6>
+                        <h3>${{ resumen_mes.total_ingresos|default:"0"|floatformat:2 }}</h3>
+                    </div>
+                    <div class="stat-icon text-success">
+                        <i class="fas fa-arrow-up"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-4">
+        <div class="card card-stats border-danger">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="text-muted">Egresos del Mes</h6>
+                        <h3>${{ resumen_mes.total_egresos|default:"0"|floatformat:2 }}</h3>
+                    </div>
+                    <div class="stat-icon text-danger">
+                        <i class="fas fa-arrow-down"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-4">
+        <div class="card card-stats {% if resumen_mes.balance >= 0 %}border-primary{% else %}border-warning{% endif %}">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="text-muted">Balance</h6>
+                        <h3>${{ resumen_mes.balance|default:"0"|floatformat:2 }}</h3>
+                    </div>
+                    <div class="stat-icon {% if resumen_mes.balance >= 0 %}text-primary{% else %}text-warning{% endif %}">
+                        <i class="fas fa-balance-scale"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-4">
+        <div class="card card-stats border-info">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="text-muted">Compras Pendientes</h6>
+                        <h3>{{ compras_pendientes|default:"0" }}</h3>
+                    </div>
+                    <div class="stat-icon text-info">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Últimos movimientos y stock bajo -->
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5><i class="fas fa-clock"></i> Últimos Movimientos</h5>
+                <a href="{% url 'contabilidad:movimiento_list' %}" class="btn btn-sm btn-outline-primary">
+                    Ver todos
+                </a>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-striped table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Concepto</th>
+                            <th>Descripción</th>
+                            <th class="text-end">Monto</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for mov in ultimos_movimientos %}
+                        <tr>
+                            <td>{{ mov.fecha|date:"d/m/Y" }}</td>
+                            <td>{{ mov.concepto.nombre }}</td>
+                            <td>{{ mov.descripcion|truncatechars:30|default:"-" }}</td>
+                            <td class="text-end {% if mov.es_ingreso %}text-success{% else %}text-danger{% endif %}">
+                                ${{ mov.monto }}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center text-muted py-3">
+                                No hay movimientos recientes
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-exclamation-triangle"></i> Stock Bajo</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    {% for p in stock_bajo %}
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>{{ p.perfume.nombre }}</strong>
+                            <br>
+                            <small class="text-muted">{{ p.get_tipo_display }} {{ p.volumen_ml }}ml</small>
+                        </div>
+                        <span class="badge bg-danger">{{ p.stock }} unidades</span>
+                    </div>
+                    {% empty %}
+                    <div class="list-group-item text-center text-muted">
+                        <i class="fas fa-check-circle text-success"></i>
+                        <br>Todo en stock
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

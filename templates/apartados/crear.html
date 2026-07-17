@@ -5,6 +5,91 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/formularios.css' %}">
+<style>
+/* ── Buscador de presentaciones ── */
+.presentacion-buscador   { position: relative; width: 100%; }
+.presentacion-select-oculto { display: none; }
+
+.presentacion-dropdown {
+    position: absolute;
+    top: calc(100% + 5px);
+    left: 0; right: 0;
+    z-index: 9999;
+    display: none;
+    max-height: 280px;
+    overflow-y: auto;
+    list-style: none !important;
+    margin: 0;
+    padding: 5px;
+    background: #fff;
+    border: 1px solid rgba(0,0,0,.12);
+    border-radius: .5rem;
+    box-shadow: 0 8px 28px rgba(0,0,0,.13);
+}
+
+.presentacion-opcion {
+    display: flex !important;
+    justify-content: space-between;
+    align-items: center;
+    gap: .75rem;
+    padding: .55rem .75rem;
+    margin-bottom: 2px;
+    border: 1px solid transparent;
+    border-radius: .35rem;
+    cursor: pointer;
+    transition: background .15s, border-color .15s;
+    list-style: none !important;
+}
+.presentacion-opcion:last-child { margin-bottom: 0; }
+.presentacion-opcion:hover {
+    background: #e8f0fe;
+    border-color: rgba(13,110,253,.2);
+}
+
+.op-left  { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.op-nombre {
+    font-size: .85rem;
+    font-weight: 600;
+    color: #1a1a1a;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.op-sub { font-size: .72rem; color: #888; }
+
+.op-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0; }
+.op-precio {
+    background: #0a0a0a;
+    color: #fff;
+    font-size: .78rem;
+    font-weight: 700;
+    padding: 2px 10px;
+    border-radius: 20px;
+    letter-spacing: .3px;
+}
+.op-stock {
+    font-size: .65rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    padding: 1px 7px;
+    border-radius: 4px;
+    letter-spacing: .04em;
+}
+.op-stock.ok  { background: #e8f5e9; color: #2e7d32; }
+.op-stock.out { background: #ffebee; color: #c62828; }
+
+.op-sin-resultados {
+    padding: .65rem .75rem;
+    font-size: .82rem;
+    color: #aaa;
+    font-style: italic;
+    cursor: default;
+    list-style: none;
+}
+
+.presentacion-dropdown::-webkit-scrollbar { width: 5px; }
+.presentacion-dropdown::-webkit-scrollbar-thumb { background: #ddd; border-radius: 10px; }
+</style>
 {% endblock %}
 
 {% block content %}
@@ -24,7 +109,11 @@
             <div class="form-group">
                 {{ field.label_tag }}
                 {{ field }}
-                {% if field.errors %}<ul class="errorlist">{% for e in field.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+                {% if field.errors %}
+                    <ul class="errorlist">
+                        {% for e in field.errors %}<li>{{ e }}</li>{% endfor %}
+                    </ul>
+                {% endif %}
             </div>
             {% endfor %}
         </div>
@@ -35,22 +124,42 @@
                 {% for f in formset %}
                 <div class="formset-item">
                     <div class="form-row-3">
+
                         <div class="form-group">
                             <label>Presentación</label>
-                            {{ f.presentacion }}
+                            <div class="presentacion-buscador">
+                                <input type="text"
+                                       class="buscador-input presentacion-input"
+                                       placeholder="Buscar perfume o marca..."
+                                       autocomplete="off">
+                                <ul class="presentacion-dropdown"></ul>
+                                <div class="presentacion-select-oculto">
+                                    {{ f.presentacion }}
+                                </div>
+                            </div>
+                            {% if f.presentacion.errors %}
+                                <ul class="errorlist">
+                                    {% for error in f.presentacion.errors %}
+                                        <li>{{ error }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
                         </div>
+
                         <div class="form-group">
                             <label>Cantidad</label>
                             {{ f.cantidad }}
                         </div>
+
                         <div class="form-group">
                             <label>Precio unitario</label>
                             {{ f.precio_unitario }}
                         </div>
+
                     </div>
                     {% if f.instance.pk %}{{ f.id }}{% endif %}
                     {% if f.errors %}
-                        <div style="color:#8b0000;font-size:0.75rem;margin-top:0.5rem;">{{ f.errors }}</div>
+                        <div style="color:#8b0000;font-size:.75rem;margin-top:.5rem;">{{ f.errors }}</div>
                     {% endif %}
                 </div>
                 {% endfor %}
@@ -68,42 +177,178 @@
     </form>
 </div>
 
+{# Template oculto para clonar nuevas filas #}
 <div id="empty-form-template" style="display:none;">
     <div class="formset-item" style="margin-top:1rem;padding-top:1rem;border-top:1px dashed #e0e0e0;">
         <div class="form-row-3">
+
             <div class="form-group">
                 <label>Presentación</label>
-                {{ formset.empty_form.presentacion }}
+                <div class="presentacion-buscador">
+                    <input type="text"
+                           class="buscador-input presentacion-input"
+                           placeholder="Buscar perfume o marca..."
+                           autocomplete="off">
+                    <ul class="presentacion-dropdown"></ul>
+                    <div class="presentacion-select-oculto">
+                        {{ formset.empty_form.presentacion }}
+                    </div>
+                </div>
             </div>
+
             <div class="form-group">
                 <label>Cantidad</label>
                 {{ formset.empty_form.cantidad }}
             </div>
+
             <div class="form-group">
                 <label>Precio unitario</label>
                 {{ formset.empty_form.precio_unitario }}
             </div>
+
         </div>
     </div>
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const container = document.getElementById('formset-container');
+document.addEventListener('DOMContentLoaded', function () {
+    const container  = document.getElementById('formset-container');
     const totalForms = document.getElementById('id_items-TOTAL_FORMS');
-    const template = document.getElementById('empty-form-template').innerHTML;
+    const template   = document.getElementById('empty-form-template').innerHTML;
+    const urlBuscar  = '{% url "apartados:buscar_presentaciones" %}';
 
-    function addForm() {
-        const index = totalForms.value;
-        const html = template.replace(/__prefix__/g, index);
-        container.insertAdjacentHTML('beforeend', html);
-        totalForms.value = parseInt(index) + 1;
+    /* ── Cierra todos los dropdowns excepto el indicado ── */
+    function cerrarDropdowns(excepto) {
+        document.querySelectorAll('.presentacion-dropdown').forEach(d => {
+            if (d !== excepto) d.style.display = 'none';
+        });
     }
 
-    // ← Agrega automáticamente 1 producto al cargar la página
-    addForm();
+    /* ── Selecciona una presentación y rellena los campos ── */
+    function seleccionar(item, p) {
+        item.querySelector('.presentacion-input').value = p.nombre;
+        item.querySelector('select[name$="-presentacion"]').value = p.id;
+
+        const precio = item.querySelector('input[name$="-precio_unitario"]');
+        if (precio && !precio.value) precio.value = p.precio;   // solo si está vacío
+
+        const dropdown = item.querySelector('.presentacion-dropdown');
+        dropdown.innerHTML = '';
+        dropdown.style.display = 'none';
+    }
+
+    /* ── Renderiza los resultados en el dropdown ── */
+    function mostrarResultados(item, resultados) {
+        const dropdown = item.querySelector('.presentacion-dropdown');
+        dropdown.innerHTML = '';
+
+        if (!resultados.length) {
+            const li = document.createElement('li');
+            li.className = 'op-sin-resultados';
+            li.textContent = 'Sin resultados';
+            dropdown.appendChild(li);
+        } else {
+            resultados.forEach(p => {
+                const li = document.createElement('li');
+                li.className = 'presentacion-opcion';
+                li.innerHTML = `
+                    <div class="op-left">
+                        <span class="op-nombre">${p.nombre}</span>
+                        <span class="op-sub">Stock: ${p.stock}</span>
+                    </div>
+                    <div class="op-right">
+                        <span class="op-precio">$${p.precio}</span>
+                        <span class="op-stock ${p.stock > 0 ? 'ok' : 'out'}">
+                            ${p.stock > 0 ? p.stock + ' disp.' : 'Agotado'}
+                        </span>
+                    </div>`;
+
+                li.addEventListener('mousedown', e => {
+                    e.preventDefault();
+                    seleccionar(item, p);
+                });
+
+                dropdown.appendChild(li);
+            });
+        }
+
+        dropdown.style.display = 'block';
+    }
+
+    /* ── Llama a la API de búsqueda ── */
+    function buscar(item, termino) {
+        fetch(`${urlBuscar}?q=${encodeURIComponent(termino)}`)
+            .then(r => r.ok ? r.json() : Promise.reject())
+            .then(data => mostrarResultados(item, data))
+            .catch(() => {
+                const dropdown = item.querySelector('.presentacion-dropdown');
+                dropdown.innerHTML = '<li class="op-sin-resultados">Error al buscar.</li>';
+                dropdown.style.display = 'block';
+            });
+    }
+
+    /* ── Inicializa el buscador de un bloque de producto ── */
+    function inicializar(item) {
+        const input    = item.querySelector('.presentacion-input');
+        const dropdown = item.querySelector('.presentacion-dropdown');
+        const select   = item.querySelector('select[name$="-presentacion"]');
+
+        if (!input || !dropdown || !select) return;
+
+        /* Si ya tiene valor (edición), muestra el texto en el input */
+        if (select.value && select.options[select.selectedIndex]) {
+            input.value = select.options[select.selectedIndex].text;
+        }
+
+        let timer;
+
+        input.addEventListener('focus', () => {
+            cerrarDropdowns(dropdown);
+            if (!input.value.trim()) buscar(item, '');
+        });
+
+        input.addEventListener('input', () => {
+            clearTimeout(timer);
+            /* Limpia el select si el usuario escribe de nuevo */
+            select.value = '';
+            timer = setTimeout(() => buscar(item, input.value.trim()), 250);
+        });
+
+        input.addEventListener('keydown', e => {
+            const primera = dropdown.querySelector('.presentacion-opcion');
+            if (e.key === 'Enter' && primera) {
+                e.preventDefault();
+                primera.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+            }
+            if (e.key === 'Escape') dropdown.style.display = 'none';
+        });
+
+        input.addEventListener('blur', () => {
+            setTimeout(() => { dropdown.style.display = 'none'; }, 160);
+        });
+    }
+
+    /* ── Agrega una nueva fila de producto ── */
+    function addForm() {
+        const index = Number(totalForms.value);
+        const html  = template.replace(/__prefix__/g, index);
+        container.insertAdjacentHTML('beforeend', html);
+        totalForms.value = index + 1;
+        inicializar(container.lastElementChild);
+    }
+
+    /* ── Inicializa los items ya presentes (errores de validación) ── */
+    document.querySelectorAll('.formset-item').forEach(inicializar);
+
+    /* ── Si no hay ninguno, agrega el primero automáticamente ── */
+    if (!document.querySelectorAll('.formset-item').length) addForm();
 
     document.getElementById('add-item').addEventListener('click', addForm);
+
+    /* ── Cierra al hacer click fuera ── */
+    document.addEventListener('click', e => {
+        if (!e.target.closest('.presentacion-buscador')) cerrarDropdowns();
+    });
 });
 </script>
 {% endblock %}

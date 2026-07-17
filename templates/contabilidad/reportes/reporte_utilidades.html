@@ -1,0 +1,160 @@
+{% load static %}
+
+<!-- Resumen de utilidades -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card card-stats border-success">
+            <div class="card-body">
+                <h6 class="text-muted">Ingresos Totales</h6>
+                <h3 class="text-success">${{ totales.ingresos|floatformat:2 }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card card-stats border-danger">
+            <div class="card-body">
+                <h6 class="text-muted">Egresos Totales</h6>
+                <h3 class="text-danger">${{ totales.egresos|floatformat:2 }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card card-stats {% if totales.utilidad >= 0 %}border-primary{% else %}border-warning{% endif %}">
+            <div class="card-body">
+                <h6 class="text-muted">Utilidad Neta</h6>
+                <h3 class="{% if totales.utilidad >= 0 %}text-primary{% else %}text-warning{% endif %}">
+                    ${{ totales.utilidad|floatformat:2 }}
+                </h3>
+                <small class="text-muted">
+                    Margen: {% if totales.ingresos > 0 %}
+                        {{ totales.utilidad|floatformat:2|add:0|divisibleby:totales.ingresos|floatformat:0 }}%
+                    {% else %}0%{% endif %}
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Ingresos vs Egresos por concepto -->
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h6><i class="fas fa-arrow-up"></i> Ingresos por Concepto</h6>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-striped mb-0">
+                        <thead>
+                            <tr>
+                                <th>Concepto</th>
+                                <th class="text-end">Monto</th>
+                                <th class="text-end">%</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in ingresos_por_concepto %}
+                            <tr>
+                                <td>{{ item.concepto__nombre }}</td>
+                                <td class="text-end">${{ item.total|floatformat:2 }}</td>
+                                <td class="text-end">
+                                    {% if totales.ingresos > 0 %}
+                                        {{ item.total|floatformat:2|add:0|divisibleby:totales.ingresos|floatformat:0 }}%
+                                    {% else %}0%{% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="3" class="text-center text-muted">No hay ingresos</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-danger text-white">
+                <h6><i class="fas fa-arrow-down"></i> Egresos por Concepto</h6>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-striped mb-0">
+                        <thead>
+                            <tr>
+                                <th>Concepto</th>
+                                <th class="text-end">Monto</th>
+                                <th class="text-end">%</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in egresos_por_concepto %}
+                            <tr>
+                                <td>{{ item.concepto__nombre }}</td>
+                                <td class="text-end">${{ item.total|floatformat:2 }}</td>
+                                <td class="text-end">
+                                    {% if totales.egresos > 0 %}
+                                        {{ item.total|floatformat:2|add:0|divisibleby:totales.egresos|floatformat:0 }}%
+                                    {% else %}0%{% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="3" class="text-center text-muted">No hay egresos</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Análisis de utilidad por perfume (opcional) -->
+{% if utilidad_por_perfume %}
+<div class="card mt-4">
+    <div class="card-header">
+        <h6><i class="fas fa-fragrance"></i> Utilidad por Perfume</h6>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-striped mb-0">
+                <thead>
+                    <tr>
+                        <th>Perfume</th>
+                        <th class="text-end">Total Ventas</th>
+                        <th class="text-end">Costo</th>
+                        <th class="text-end">Utilidad</th>
+                        <th class="text-end">Margen</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in utilidad_por_perfume %}
+                    <tr>
+                        <td>{{ item.perfume }}</td>
+                        <td class="text-end">${{ item.ventas|floatformat:2 }}</td>
+                        <td class="text-end">${{ item.costo|floatformat:2 }}</td>
+                        <td class="text-end {% if item.utilidad >= 0 %}text-success{% else %}text-danger{% endif %}">
+                            ${{ item.utilidad|floatformat:2 }}
+                        </td>
+                        <td class="text-end">
+                            {% if item.ventas > 0 %}
+                                {{ item.utilidad|floatformat:2|add:0|divisibleby:item.ventas|floatformat:0 }}%
+                            {% else %}0%{% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center text-muted">No hay datos disponibles</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}

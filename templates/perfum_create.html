@@ -3,7 +3,149 @@
 <head>
     {% block title %}{% if editando %}Editar {{ perfume.nombre }}{% else %}Nuevo Perfume{% endif %}{% endblock %}
     {% block extra_css %}
-    <link rel="stylesheet" href="{% static '/css/formularios.css' %}">
+    <link rel="stylesheet" href="{% static 'css/formularios.css' %}">
+<style>
+    /* ══════════════════════════════════════════════════════════
+   Buscador de familia olfativa, acordes y notas
+   ══════════════════════════════════════════════════════════ */
+
+.buscador-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+/* Input de búsqueda */
+.buscador-input {
+    display: block;
+    width: 100%;
+    min-height: 31px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: #212529;
+    background-color: #fff;
+    background-clip: padding-box;
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+    outline: none;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.buscador-input::placeholder {
+    color: #6c757d;
+    opacity: 1;
+}
+
+.buscador-input:focus {
+    border-color: #86b7fe;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+/* Lista de resultados */
+.buscador-dropdown {
+    position: absolute;
+    top: calc(100% + 3px);
+    left: 0;
+    right: 0;
+    z-index: 9999;
+    display: none;
+    max-height: 260px;
+    margin: 0;
+    padding: 0;
+    overflow-y: auto;
+    list-style: none;
+    background: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    border-radius: 0.45rem;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.15);
+}
+
+.buscador-dropdown li {
+    padding: 0.45rem 0.75rem;
+    color: #212529;
+    font-size: 0.83rem;
+    line-height: 1.4;
+    cursor: pointer;
+    border-bottom: 1px solid #e9ecef;
+    transition: background-color 0.15s ease-in-out, color 0.15s ease-in-out;
+}
+
+.buscador-dropdown li:first-child {
+    border-top: none;
+    border-radius: 0.45rem 0.45rem 0 0;
+}
+
+.buscador-dropdown li:last-child {
+    border-bottom: none;
+    border-radius: 0 0 0.45rem 0.45rem;
+}
+
+.buscador-dropdown li:hover {
+    color: #0d6efd;
+    background: #e8f0fe;
+}
+
+/* Opción para crear una familia, acorde o nota nueva */
+.buscador-dropdown .buscador-crear {
+    color: #198754;
+    font-weight: 600;
+    font-style: normal;
+    border-top: 1px solid #dee2e6;
+}
+
+.buscador-dropdown .buscador-crear:hover {
+    color: #146c43;
+    background: #e8f5ee;
+}
+
+/* Contenedor de tags elegidos */
+.tags-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    min-height: 1.75rem;
+    margin-top: 0.6rem;
+}
+
+/* Tag de acorde o nota seleccionada */
+.tag-seleccionado {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.3rem 0.7rem;
+    color: #0d6efd;
+    font-size: 0.78rem;
+    font-weight: 600;
+    line-height: 1.2;
+    background: #e8f0fe;
+    border: 1px solid rgba(13, 110, 253, 0.33);
+    border-radius: 20px;
+}
+
+/* Botón × para retirar un tag */
+.tag-seleccionado button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    padding: 0;
+    color: #0d6efd;
+    font-size: 1rem;
+    line-height: 1;
+    cursor: pointer;
+    background: transparent;
+    border: none;
+    border-radius: 50%;
+    transition: background-color 0.15s ease-in-out, color 0.15s ease-in-out;
+}
+
+.tag-seleccionado button:hover {
+    color: #fff;
+    background: #0d6efd;
+}
+</style>
+    
     {% endblock %}
 </head>
 
@@ -11,35 +153,30 @@
 <section class="form-container">
     <h1>{% if editando %}Editar {{ perfume.nombre }}{% else %}Nuevo Perfume{% endif %}</h1>
 
-    <form method="POST" enctype="multipart/form-data">
+    <form method="POST" enctype="multipart/form-data" id="perfume-form">
         {% csrf_token %}
 
         <div class="form-section">
             <h3>Información básica</h3>
             <div class="form-group">
                 <label>Nombre</label>
-                {{ form.nombre }}
-                {{ form.nombre.errors }}
+                {{ form.nombre }}{{ form.nombre.errors }}
             </div>
             <div class="form-group">
                 <label>Marca</label>
-                {{ form.marca }}
-                {{ form.marca.errors }}
+                {{ form.marca }}{{ form.marca.errors }}
             </div>
             <div class="form-group">
                 <label>Género</label>
-                {{ form.genero }}
-                {{ form.genero.errors }}
+                {{ form.genero }}{{ form.genero.errors }}
             </div>
             <div class="form-group">
                 <label>Descripción</label>
-                {{ form.descripcion }}
-                {{ form.descripcion.errors }}
+                {{ form.descripcion }}{{ form.descripcion.errors }}
             </div>
             <div class="form-group">
                 <label>Imagen de portada</label>
-                {{ form.imagen_portada }}
-                {{ form.imagen_portada.errors }}
+                {{ form.imagen_portada }}{{ form.imagen_portada.errors }}
             </div>
             <div class="form-group">
                 <label>Activo</label>
@@ -49,18 +186,59 @@
 
         <div class="form-section">
             <h3>Clasificación olfativa</h3>
+
             <div class="form-group">
                 <label>Familia olfativa</label>
-                {{ form.familia_olfativa }}
+                <div class="buscador-wrapper">
+                    <input type="text" id="familia-input" class="buscador-input"
+                           placeholder="Buscar o crear familia..."
+                           autocomplete="off"
+                           value="{% if form.instance.familia_olfativa %}{{ form.instance.familia_olfativa.nombre }}{% endif %}">
+                    <input type="hidden" id="familia-hidden" name="familia_olfativa"
+                           value="{% if form.instance.familia_olfativa %}{{ form.instance.familia_olfativa.id }}{% endif %}">
+                </div>
                 {{ form.familia_olfativa.errors }}
             </div>
+
+            
             <div class="form-group">
                 <label>Acordes</label>
-                <div class="checkbox-group">{{ form.acordes }}</div>
+                <div class="buscador-wrapper">
+                    <input type="text" id="acorde-input" class="buscador-input"
+                           placeholder="Buscar o crear acorde..."
+                           autocomplete="off">
+                    <div class="tags-container" id="acordes-tags" data-name="acordes">
+                        {% if form.instance.pk %}
+                            {% for acorde in form.instance.acordes.all %}
+                            <span class="tag-seleccionado" data-id="{{ acorde.id }}" data-nombre="{{ acorde.nombre }}">
+                                {{ acorde.nombre }}
+                                <button type="button" data-id="{{ acorde.id }}">×</button>
+                            </span>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                </div>
+                {{ form.acordes.errors }}
             </div>
+
             <div class="form-group">
                 <label>Notas</label>
-                <div class="checkbox-group">{{ form.notas }}</div>
+                <div class="buscador-wrapper">
+                    <input type="text" id="nota-input" class="buscador-input"
+                           placeholder="Buscar o crear nota..."
+                           autocomplete="off">
+                    <div class="tags-container" id="notas-tags" data-name="notas">
+                        {% if form.instance.pk %}
+                            {% for nota in form.instance.notas.all %}
+                            <span class="tag-seleccionado" data-id="{{ nota.id }}" data-nombre="{{ nota.nombre }}">
+                                {{ nota.nombre }}
+                                <button type="button" data-id="{{ nota.id }}">×</button>
+                            </span>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                </div>
+                {{ form.notas.errors }}
             </div>
         </div>
 
@@ -68,16 +246,13 @@
             <h3>Perfil olfativo</h3>
             <div class="form-row">
                 <div class="form-group">
-                    <label>Longevidad</label>
-                    {{ form.longevidad }}
+                    <label>Longevidad</label>{{ form.longevidad }}
                 </div>
                 <div class="form-group">
-                    <label>Estela</label>
-                    {{ form.estela }}
+                    <label>Estela</label>{{ form.estela }}
                 </div>
                 <div class="form-group">
-                    <label>Uso</label>
-                    {{ form.uso }}
+                    <label>Uso</label>{{ form.uso }}
                 </div>
             </div>
         </div>
@@ -90,4 +265,41 @@
         </div>
     </form>
 </section>
+
+{% block extra_js %}
+<script src="{% static 'js/perfume_form.js' %}"></script>
+<script>
+const CSRF = '{{ csrf_token }}';
+
+// Familia olfativa (ForeignKey → un solo valor)
+initBuscador({
+    tipo:      'fk',
+    inputId:   'familia-input',
+    hiddenId:  'familia-hidden',
+    urlBuscar: '{% url "buscar_familia" %}',
+    urlCrear:  '{% url "crear_familia" %}',
+    csrfToken: CSRF,
+});
+
+// Acordes (ManyToMany → tags)
+initBuscador({
+    tipo:      'm2m',
+    inputId:   'acorde-input',
+    tagsId:    'acordes-tags',
+    urlBuscar: '{% url "buscar_acorde" %}',
+    urlCrear:  '{% url "crear_acorde" %}',
+    csrfToken: CSRF,
+});
+
+// Notas (ManyToMany → tags)
+initBuscador({
+    tipo:      'm2m',
+    inputId:   'nota-input',
+    tagsId:    'notas-tags',
+    urlBuscar: '{% url "buscar_nota" %}',
+    urlCrear:  '{% url "crear_nota" %}',
+    csrfToken: CSRF,
+});
+</script>
+{% endblock %}
 {% endblock %}

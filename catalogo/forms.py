@@ -13,8 +13,9 @@ class PerfumeForm(forms.ModelForm):
         ]
         widgets = {
             'descripcion': forms.Textarea(attrs={'rows': 3}),
-            'acordes': forms.CheckboxSelectMultiple(),
-            'notas': forms.CheckboxSelectMultiple(),
+            'acordes': forms.MultipleHiddenInput(),
+            'notas': forms.MultipleHiddenInput(),
+            'familia_olfativa': forms.HiddenInput(),
         }
 
 class PresentacionForm(forms.ModelForm):

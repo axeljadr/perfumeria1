@@ -1,0 +1,155 @@
+{% extends 'contabilidad/base_contabilidad.html' %}
+
+{% block page_title %}{% if action == 'crear' %}Nuevo Movimiento{% else %}Editar Movimiento{% endif %}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5>
+                    <i class="fas fa-{% if action == 'crear' %}plus{% else %}edit{% endif %}"></i>
+                    {% if action == 'crear' %}Registrar Nuevo Movimiento{% else %}Editar Movimiento #{{ movimiento.id }}{% endif %}
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.fecha.id_for_label }}" class="form-label">
+                                <i class="fas fa-calendar"></i> Fecha *
+                            </label>
+                            {{ form.fecha }}
+                            {% if form.fecha.errors %}
+                                <div class="text-danger small">{{ form.fecha.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.concepto.id_for_label }}" class="form-label">
+                                <i class="fas fa-tag"></i> Concepto *
+                            </label>
+                            {{ form.concepto }}
+                            {% if form.concepto.errors %}
+                                <div class="text-danger small">{{ form.concepto.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.monto.id_for_label }}" class="form-label">
+                                <i class="fas fa-dollar-sign"></i> Monto *
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                {{ form.monto }}
+                            </div>
+                            {% if form.monto.errors %}
+                                <div class="text-danger small">{{ form.monto.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.cantidad.id_for_label }}" class="form-label">
+                                <i class="fas fa-hashtag"></i> Cantidad
+                            </label>
+                            {{ form.cantidad }}
+                            <small class="text-muted d-block">Cantidad de unidades (por defecto 1)</small>
+                            {% if form.cantidad.errors %}
+                                <div class="text-danger small">{{ form.cantidad.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.descripcion.id_for_label }}" class="form-label">
+                            <i class="fas fa-sticky-note"></i> Descripción
+                        </label>
+                        {{ form.descripcion }}
+                        {% if form.descripcion.errors %}
+                            <div class="text-danger small">{{ form.descripcion.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.estado.id_for_label }}" class="form-label">
+                                <i class="fas fa-check-circle"></i> Estado
+                            </label>
+                            {{ form.estado }}
+                            <small class="text-muted d-block">
+                                <span class="badge bg-success">Confirmado</span> = Movimiento definitivo<br>
+                                <span class="badge bg-warning text-dark">Pendiente</span> = Aún no confirmado
+                            </small>
+                            {% if form.estado.errors %}
+                                <div class="text-danger small">{{ form.estado.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6><i class="fas fa-info-circle"></i> Información</h6>
+                                    <hr>
+                                    <p class="small mb-0">
+                                        <strong>Tipo:</strong>
+                                        <span id="tipo_preview" class="text-muted">Selecciona un concepto</span>
+                                    </p>
+                                    <p class="small mb-0">
+                                        <strong>Ingreso/Egreso:</strong>
+                                        <span id="tipo_movimiento" class="text-muted">-</span>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="d-flex justify-content-end gap-2">
+                        <a href="{% url 'contabilidad:movimiento_list' %}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> 
+                            {% if action == 'crear' %}Guardar Movimiento{% else %}Actualizar{% endif %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // Previsualizar tipo de concepto seleccionado
+        $('#id_concepto').on('change', function() {
+            var conceptoId = $(this).val();
+            if (conceptoId) {
+                // Si tienes un endpoint para obtener datos del concepto, puedes hacer una llamada AJAX
+                // Por ahora, mostramos información básica
+                var text = $(this).find('option:selected').text();
+                if (text.includes('Ingreso')) {
+                    $('#tipo_preview').text('Ingreso');
+                    $('#tipo_movimiento').html('<span class="text-success"><i class="fas fa-arrow-up"></i> Ingreso</span>');
+                } else if (text.includes('Egreso')) {
+                    $('#tipo_preview').text('Egreso');
+                    $('#tipo_movimiento').html('<span class="text-danger"><i class="fas fa-arrow-down"></i> Egreso</span>');
+                } else {
+                    $('#tipo_preview').text('Selecciona un concepto');
+                    $('#tipo_movimiento').text('-');
+                }
+            }
+        });
+        
+        // Disparar evento para cargar el concepto actual si existe
+        $('#id_concepto').trigger('change');
+    });
+</script>
+{% endblock %}

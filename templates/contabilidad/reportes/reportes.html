@@ -1,0 +1,130 @@
+{% extends 'contabilidad/base_contabilidad.html' %}
+
+{% block page_title %}Reportes Financieros{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-file-alt"></i> Generar Reporte</h5>
+                <small class="text-muted">Selecciona el tipo de reporte y el período</small>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{% url 'contabilidad:reportes' %}">
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.tipo_reporte.id_for_label }}" class="form-label">
+                                <i class="fas fa-chart-pie"></i> Tipo de Reporte
+                            </label>
+                            {{ form.tipo_reporte }}
+                            {% if form.tipo_reporte.errors %}
+                                <div class="text-danger small">{{ form.tipo_reporte.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.formato.id_for_label }}" class="form-label">
+                                <i class="fas fa-file-export"></i> Formato
+                            </label>
+                            {{ form.formato }}
+                            {% if form.formato.errors %}
+                                <div class="text-danger small">{{ form.formato.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.fecha_inicio.id_for_label }}" class="form-label">
+                                <i class="fas fa-calendar-alt"></i> Fecha Inicio
+                            </label>
+                            {{ form.fecha_inicio }}
+                            {% if form.fecha_inicio.errors %}
+                                <div class="text-danger small">{{ form.fecha_inicio.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.fecha_fin.id_for_label }}" class="form-label">
+                                <i class="fas fa-calendar-alt"></i> Fecha Fin
+                            </label>
+                            {{ form.fecha_fin }}
+                            {% if form.fecha_fin.errors %}
+                                <div class="text-danger small">{{ form.fecha_fin.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="d-flex justify-content-end">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-file-export"></i> Generar Reporte
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Sidebar informativo -->
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h6><i class="fas fa-info-circle"></i> Tipos de Reportes</h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <h6><i class="fas fa-shopping-cart text-primary"></i> Compras</h6>
+                    <small class="text-muted">Resumen de todas las compras, proveedores y costos en el período</small>
+                </div>
+                <hr>
+                <div class="mb-3">
+                    <h6><i class="fas fa-coins text-success"></i> Movimientos</h6>
+                    <small class="text-muted">Detalle de ingresos, egresos y balance general</small>
+                </div>
+                <hr>
+                <div class="mb-3">
+                    <h6><i class="fas fa-boxes text-warning"></i> Inventario</h6>
+                    <small class="text-muted">Stock actual, valoración y productos con stock bajo</small>
+                </div>
+                <hr>
+                <div class="mb-0">
+                    <h6><i class="fas fa-chart-line text-info"></i> Utilidades</h6>
+                    <small class="text-muted">Análisis de rentabilidad y margen de ganancia</small>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Reportes rápidos -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6><i class="fas fa-bolt"></i> Reportes Rápidos</h6>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{% url 'contabilidad:reportes' %}?tipo=movimientos&inicio={{ hoy|date:'Y-m-01' }}&fin={{ hoy|date:'Y-m-d' }}" 
+                       class="btn btn-outline-secondary btn-sm">
+                        <i class="fas fa-file-alt"></i> Mes Actual
+                    </a>
+                    <a href="{% url 'contabilidad:reportes' %}?tipo=movimientos&inicio={{ hoy|date:'Y-01-01' }}&fin={{ hoy|date:'Y-m-d' }}" 
+                       class="btn btn-outline-secondary btn-sm">
+                        <i class="fas fa-file-alt"></i> Año Actual
+                    </a>
+                    <a href="{% url 'contabilidad:reportes' %}?tipo=compras&inicio={{ hoy|date:'Y-m-01' }}&fin={{ hoy|date:'Y-m-d' }}" 
+                       class="btn btn-outline-secondary btn-sm">
+                        <i class="fas fa-shopping-cart"></i> Compras del Mes
+                    </a>
+                    <a href="{% url 'contabilidad:reportes' %}?tipo=utilidades&inicio={{ hoy|date:'Y-m-01' }}&fin={{ hoy|date:'Y-m-d' }}" 
+                       class="btn btn-outline-secondary btn-sm">
+                        <i class="fas fa-chart-line"></i> Utilidades del Mes
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

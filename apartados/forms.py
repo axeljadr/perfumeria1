@@ -28,29 +28,34 @@ class PedidoApartadoItemForm(forms.ModelForm):
         model = PedidoApartadoItem
         fields = ['presentacion', 'cantidad', 'precio_unitario']
         widgets = {
+            'presentacion': forms.Select(attrs={
+                'class': 'presentacion-select-oculto'
+            }),
             'cantidad': forms.NumberInput(attrs={
-                'min': 1, 'value': 1
+                'min': 1,
+                'value': 1,
             }),
             'precio_unitario': forms.NumberInput(attrs={
-                'step': '0.01', 'placeholder': 'Se autocompleta al seleccionar'
+                'step': '0.01',
+                'min': '0',
+                'placeholder': '0.00',
+                'class': 'item-precio',
             }),
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
         self.fields['presentacion'].queryset = (
             Presentacion.objects
             .filter(activo=True)
             .select_related('perfume')
-            .order_by('perfume__marca', 'perfume__nombre', 'volumen_ml')
+            .order_by(
+                'perfume__marca',
+                'perfume__nombre',
+                'volumen_ml',
+            )
         )
-        self.fields['presentacion'].widget.attrs.update({
-            'class': 'item-presentacion'
-        })
-        self.fields['precio_unitario'].widget.attrs.update({
-            'class': 'item-precio'
-        })
-
 
 PedidoApartadoItemFormSet = forms.inlineformset_factory(
     PedidoApartado,

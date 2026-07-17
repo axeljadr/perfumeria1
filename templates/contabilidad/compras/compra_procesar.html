@@ -1,0 +1,84 @@
+{% extends 'contabilidad/base_contabilidad.html' %}
+
+{% block page_title %}Procesar Compra #{{ compra.id }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header bg-warning">
+                <h5><i class="fas fa-exclamation-triangle"></i> Confirmar Procesamiento</h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <h6><i class="fas fa-info-circle"></i> ¿Qué va a pasar?</h6>
+                    <ul class="mb-0">
+                        <li>Se actualizará el stock del perfume (100ml)</li>
+                        <li>Se crearán las presentaciones de decants (3ml, 5ml, 10ml)</li>
+                        <li>Se calcularán los precios automáticamente</li>
+                        <li>Se creará un movimiento contable de egreso</li>
+                    </ul>
+                </div>
+                
+                <div class="table-responsive mb-4">
+                    <table class="table table-striped">
+                        <tr>
+                            <th>Perfume</th>
+                            <td>{{ compra.perfume.nombre }}</td>
+                        </tr>
+                        <tr>
+                            <th>Cantidad</th>
+                            <td>{{ compra.cantidad_comprada }} unidades</td>
+                        </tr>
+                        <tr>
+                            <th>Costo Total</th>
+                            <td><strong>${{ compra.costo_total|floatformat:2 }}</strong></td>
+                        </tr>
+                        <tr>
+                            <th>Estado Actual</th>
+                            <td>
+                                <span class="badge bg-warning text-dark">En Proceso</span>
+                                <i class="fas fa-arrow-right"></i>
+                                <span class="badge bg-success">Completada</span>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                
+                <form method="POST">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="confirmar" id="confirmar" required>
+                            <label class="form-check-label" for="confirmar">
+                                <strong>Confirmo que quiero procesar esta compra</strong>
+                            </label>
+                            <div class="text-muted small">
+                                Esta acción no se puede deshacer
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="id_notas" class="form-label">Notas adicionales</label>
+                        <textarea name="notas" id="id_notas" class="form-control" rows="2" 
+                                  placeholder="Opcional: añade notas sobre esta compra"></textarea>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="d-flex justify-content-end gap-2">
+                        <a href="{% url 'contabilidad:compra_detail' compra.pk %}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-check-circle"></i> Procesar Compra
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}  

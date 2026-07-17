@@ -121,7 +121,46 @@ def editar_perfume(request, pk):
     })
 
 
+from django.http import JsonResponse
 
+def buscar_familia(request):
+    q = request.GET.get('q', '').strip()
+    resultados = FamiliaOlfativa.objects.filter(nombre__icontains=q).values('id', 'nombre')[:10]
+    return JsonResponse(list(resultados), safe=False)
+
+def buscar_acorde(request):
+    q = request.GET.get('q', '').strip()
+    resultados = Acorde.objects.filter(nombre__icontains=q).values('id', 'nombre')[:10]
+    return JsonResponse(list(resultados), safe=False)
+
+def buscar_nota(request):
+    q = request.GET.get('q', '').strip()
+    resultados = Nota.objects.filter(nombre__icontains=q).values('id', 'nombre')[:10]
+    return JsonResponse(list(resultados), safe=False)
+
+def crear_familia(request):
+    if request.method == 'POST':
+        nombre = request.POST.get('nombre', '').strip()
+        if nombre:
+            obj, _ = FamiliaOlfativa.objects.get_or_create(nombre__iexact=nombre, defaults={'nombre': nombre})
+            return JsonResponse({'id': obj.id, 'nombre': obj.nombre})
+    return JsonResponse({'error': 'Nombre requerido'}, status=400)
+
+def crear_acorde(request):
+    if request.method == 'POST':
+        nombre = request.POST.get('nombre', '').strip()
+        if nombre:
+            obj, _ = Acorde.objects.get_or_create(nombre__iexact=nombre, defaults={'nombre': nombre})
+            return JsonResponse({'id': obj.id, 'nombre': obj.nombre})
+    return JsonResponse({'error': 'Nombre requerido'}, status=400)
+
+def crear_nota(request):
+    if request.method == 'POST':
+        nombre = request.POST.get('nombre', '').strip()
+        if nombre:
+            obj, _ = Nota.objects.get_or_create(nombre__iexact=nombre, defaults={'nombre': nombre})
+            return JsonResponse({'id': obj.id, 'nombre': obj.nombre})
+    return JsonResponse({'error': 'Nombre requerido'}, status=400)
 # ── FAMILIAS OLFATIVAS ──────────────────────────────────────────
 
 @staff_member_required

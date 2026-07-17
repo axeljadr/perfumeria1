@@ -116,9 +116,7 @@ class Presentacion(models.Model):
     precio = models.DecimalField(max_digits=10, decimal_places=2)
     stock = models.PositiveIntegerField(default=0)
     activo = models.BooleanField(default=True)
-
-    def __str__(self):
-        return f"{self.perfume.nombre} - {self.get_tipo_display()} {self.volumen_ml}ml"
+    precio_automatico = models.BooleanField(default=False, blank=True, null=True)
 
     @property
     def disponible(self):
@@ -132,3 +130,14 @@ class Presentacion(models.Model):
             presentacion=self,
             pedido__estado__in=['abierto', 'liquidado']
         ).count()
+    
+    class Meta:
+        verbose_name = "presentación"
+        verbose_name_plural = "presentaciones"
+        ordering = ['perfume', 'volumen_ml']
+        unique_together = ['perfume', 'tipo', 'volumen_ml']
+    
+    def __str__(self):
+        return f"{self.perfume.nombre} - {self.get_tipo_display()} {self.volumen_ml}ml"
+
+

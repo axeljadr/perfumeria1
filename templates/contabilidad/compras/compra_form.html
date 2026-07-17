@@ -1,0 +1,133 @@
+{% extends 'contabilidad/base_contabilidad.html' %}
+
+{% block page_title %}{% if action == 'crear' %}Nueva Compra{% else %}Editar Compra{% endif %}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-{% if action == 'crear' %}plus{% else %}edit{% endif %}"></i> 
+                    {% if action == 'crear' %}Registrar Nueva Compra{% else %}Editar Compra #{{ compra.id }}{% endif %}
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.perfume.id_for_label }}" class="form-label">
+                                <i class="fas fa-fragrance"></i> Perfume *
+                            </label>
+                            {{ form.perfume }}
+                            {% if form.perfume.errors %}
+                                <div class="text-danger small">{{ form.perfume.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.proveedor.id_for_label }}" class="form-label">
+                                <i class="fas fa-truck"></i> Proveedor
+                            </label>
+                            {{ form.proveedor }}
+                            {% if form.proveedor.errors %}
+                                <div class="text-danger small">{{ form.proveedor.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="{{ form.cantidad_comprada.id_for_label }}" class="form-label">
+                                <i class="fas fa-hashtag"></i> Cantidad *
+                            </label>
+                            {{ form.cantidad_comprada }}
+                            <small class="text-muted">{{ form.cantidad_comprada.help_text }}</small>
+                            {% if form.cantidad_comprada.errors %}
+                                <div class="text-danger small">{{ form.cantidad_comprada.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <label for="{{ form.precio_unitario.id_for_label }}" class="form-label">
+                                <i class="fas fa-dollar-sign"></i> Precio Unitario *
+                            </label>
+                            {{ form.precio_unitario }}
+                            <small class="text-muted">{{ form.precio_unitario.help_text }}</small>
+                            {% if form.precio_unitario.errors %}
+                                <div class="text-danger small">{{ form.precio_unitario.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">
+                                <i class="fas fa-calculator"></i> Costo Total
+                            </label>
+                            <input type="text" class="form-control" id="costo_total" readonly 
+                                   placeholder="Se calculará automáticamente">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.fecha_compra.id_for_label }}" class="form-label">
+                            <i class="fas fa-calendar"></i> Fecha de Compra
+                        </label>
+                        {{ form.fecha_compra }}
+                        {% if form.fecha_compra.errors %}
+                            <div class="text-danger small">{{ form.fecha_compra.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.notas.id_for_label }}" class="form-label">
+                            <i class="fas fa-sticky-note"></i> Notas
+                        </label>
+                        {{ form.notas }}
+                        {% if form.notas.errors %}
+                            <div class="text-danger small">{{ form.notas.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="d-flex justify-content-end gap-2">
+                        <a href="{% url 'contabilidad:compra_list' %}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Guardar Compra
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // Calcular costo total automáticamente
+        function calcularCostoTotal() {
+            var cantidad = $('#id_cantidad_comprada').val();
+            var precio = $('#id_precio_unitario').val();
+            
+            if (cantidad && precio) {
+                var total = parseFloat(cantidad) * parseFloat(precio);
+                if (!isNaN(total)) {
+                    $('#costo_total').val('$' + total.toFixed(2));
+                }
+            } else {
+                $('#costo_total').val('');
+            }
+        }
+        
+        $('#id_cantidad_comprada, #id_precio_unitario').on('input', calcularCostoTotal);
+        
+        // Inicializar
+        calcularCostoTotal();
+    });
+</script>
+{% endblock %}

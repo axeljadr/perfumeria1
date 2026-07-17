@@ -69,6 +69,7 @@ INSTALLED_APPS = [
     'cloudinary',
     'catalogo',  
     'ordencompra',  
+    'contabilidad',  
     'apartados',  
     'rest_framework',
 ]

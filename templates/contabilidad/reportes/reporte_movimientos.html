@@ -1,0 +1,98 @@
+{% load static %}
+
+<!-- Resumen de movimientos -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card card-stats border-success">
+            <div class="card-body">
+                <h6 class="text-muted">Total Ingresos</h6>
+                <h3 class="text-success">${{ totales.ingresos|floatformat:2 }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card card-stats border-danger">
+            <div class="card-body">
+                <h6 class="text-muted">Total Egresos</h6>
+                <h3 class="text-danger">${{ totales.egresos|floatformat:2 }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card card-stats {% if totales.balance >= 0 %}border-primary{% else %}border-warning{% endif %}">
+            <div class="card-body">
+                <h6 class="text-muted">Balance</h6>
+                <h3 class="{% if totales.balance >= 0 %}text-primary{% else %}text-warning{% endif %}">
+                    ${{ totales.balance|floatformat:2 }}
+                </h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card card-stats border-info">
+            <div class="card-body">
+                <h6 class="text-muted">Total Movimientos</h6>
+                <h3>{{ datos|length }}</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tabla de movimientos -->
+<div class="card">
+    <div class="card-header">
+        <h6><i class="fas fa-list"></i> Detalle de Movimientos</h6>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Concepto</th>
+                        <th>Descripción</th>
+                        <th class="text-end">Cantidad</th>
+                        <th class="text-end">Monto</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for movimiento in datos %}
+                    <tr>
+                        <td>{{ movimiento.fecha|date:"d/m/Y" }}</td>
+                        <td>
+                            <strong>{{ movimiento.concepto.nombre }}</strong>
+                            <br>
+                            <small class="text-muted">{{ movimiento.concepto.get_tipo_display }}</small>
+                        </td>
+                        <td>{{ movimiento.descripcion|default:"-"|truncatechars:40 }}</td>
+                        <td class="text-end">{{ movimiento.cantidad }}</td>
+                        <td class="text-end {% if movimiento.es_ingreso %}text-success{% else %}text-danger{% endif %}">
+                            <strong>${{ movimiento.monto|floatformat:2 }}</strong>
+                        </td>
+                        <td>
+                            <span class="badge {% if movimiento.estado == 'confirmado' %}bg-success{% elif movimiento.estado == 'pendiente' %}bg-warning{% else %}bg-danger{% endif %}">
+                                {{ movimiento.get_estado_display }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-4">
+                            No hay movimientos en este período
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr class="table-light fw-bold">
+                        <td colspan="3" class="text-end">TOTALES</td>
+                        <td class="text-end">-</td>
+                        <td class="text-end">${{ totales.balance|floatformat:2 }}</td>
+                        <td></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+</div>

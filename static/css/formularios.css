@@ -285,7 +285,226 @@
     border-radius: 50%;
     border: 1px solid #e0e0e0;
 }
+/* ===== BUSCADOR CON TAGS ===== */
+.buscador-wrapper {
+    position: relative;
+}
 
+.buscador-input {
+    width: 100%;
+    border: 1px solid #ddd;
+    padding: 0.7rem 1rem;
+    font-family: var(--font-sans);
+    font-size: 0.85rem;
+    background: var(--off-white);
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.buscador-input:focus {
+    border-color: var(--negro);
+    background: var(--blanco);
+}
+
+.buscador-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--blanco);
+    border: 1px solid #ddd;
+    border-top: none;
+    list-style: none;
+    z-index: 100;
+    max-height: 200px;
+    overflow-y: auto;
+    display: none;
+}
+
+.buscador-dropdown li {
+    padding: 0.6rem 1rem;
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.buscador-dropdown li:hover {
+    background: #f5f5f5;
+}
+
+.buscador-crear {
+    color: var(--dorado) !important;
+    font-style: italic;
+    border-top: 1px solid #f0f0f0;
+}
+
+.tags-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.6rem;
+    min-height: 1rem;
+}
+
+.tag-seleccionado {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: var(--negro);
+    color: var(--blanco);
+    font-size: 0.72rem;
+    padding: 0.25rem 0.7rem;
+    letter-spacing: 0.05em;
+}
+
+.tag-seleccionado button {
+    background: none;
+    border: none;
+    color: var(--blanco);
+    cursor: pointer;
+    font-size: 0.9rem;
+    line-height: 1;
+    padding: 0;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+}
+
+.tag-seleccionado button:hover {
+    opacity: 1;
+}
+
+
+
+/* ══════════════════════════════════════════════════════════
+   Buscador Premium de Presentaciones
+   ══════════════════════════════════════════════════════════ */
+
+.presentacion-buscador {
+    position: relative;
+    width: 100%;
+}
+
+/* El input de búsqueda */
+.presentacion-input {
+    border: 1.5px solid #e0e0e0 !important;
+    padding-left: 2.5rem !important;
+    /* Espacio para un icono de lupa si decides ponerlo */
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.presentacion-input:focus {
+    border-color: #c5a059 !important;
+    /* Tu dorado característico */
+    box-shadow: 0 0 0 4px rgba(197, 160, 89, 0.1) !important;
+}
+
+/* Asegura que el dropdown flote por encima de todo */
+.presentacion-buscador {
+    position: relative;
+    /* OBLIGATORIO */
+}
+.presentacion-select-oculto {
+    display: none;
+}
+
+.presentacion-dropdown {
+    position: absolute;
+    top: calc(100% + 5px);
+    left: 0;
+    right: 0;
+    z-index: 9999;
+    max-height: 280px;
+    overflow-y: auto;
+    border: 1px solid rgba(0, 0, 0, .13);
+    border-radius: .5rem;
+    background: #fff;
+    box-shadow: 0 8px 28px rgba(0, 0, 0, .13);
+    padding: 5px;
+    list-style: none !important;
+    margin: 0;
+}
+
+.presentacion-opcion {
+    display: flex !important;
+    justify-content: space-between;
+    align-items: center;
+    gap: .75rem;
+    padding: .55rem .75rem;
+    border-radius: .35rem;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: background .15s, border-color .15s;
+    margin-bottom: 2px;
+}
+
+.presentacion-opcion:hover {
+    background: #e8f0fe;
+    border-color: rgba(13, 110, 253, .2);
+}
+
+.op-left {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.op-nombre {
+    font-size: .85rem;
+    font-weight: 600;
+    color: #1a1a1a;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.op-sub {
+    font-size: .72rem;
+    color: #888;
+}
+
+.op-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+.op-precio {
+    background: #0a0a0a;
+    color: #fff;
+    font-size: .78rem;
+    font-weight: 700;
+    padding: 2px 10px;
+    border-radius: 20px;
+}
+
+.op-stock {
+    font-size: .65rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    padding: 1px 7px;
+    border-radius: 4px;
+}
+
+.op-stock.ok {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+.op-stock.out {
+    background: #ffebee;
+    color: #c62828;
+}
+
+.buscador-sin-resultados {
+    padding: .65rem .75rem;
+    font-size: .82rem;
+    color: #aaa;
+    font-style: italic;
+    cursor: default;
+}
 @media (max-width: 768px) {
     .gestion-layout {
         grid-template-columns: 1fr;

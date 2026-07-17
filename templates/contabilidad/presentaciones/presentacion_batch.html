@@ -1,0 +1,122 @@
+{% extends 'contabilidad/base_contabilidad.html' %}
+
+{% block page_title %}Crear Múltiples Presentaciones{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-plus-circle"></i> Crear Presentaciones Masivas</h5>
+                <small class="text-muted">Crea varias presentaciones para un perfume de una sola vez</small>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <h6><i class="fas fa-info-circle"></i> ¿Cómo funciona?</h6>
+                    <p class="mb-0 small">
+                        Ingresa los precios para cada volumen en el formato <code>ml:precio</code> (uno por línea).
+                        Ejemplo para un perfume de $650:
+                    </p>
+                    <pre class="bg-light p-2 mt-2 rounded small">
+3:45
+5:60
+10:105
+100:650</pre>
+                </div>
+                
+                <form method="POST">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.perfume.id_for_label }}" class="form-label">
+                            <i class="fas fa-fragrance"></i> Perfume
+                        </label>
+                        {{ form.perfume }}
+                        {% if form.perfume.errors %}
+                            <div class="text-danger small">{{ form.perfume.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.precios.id_for_label }}" class="form-label">
+                            <i class="fas fa-dollar-sign"></i> Precios
+                        </label>
+                        {{ form.precios }}
+                        <small class="text-muted d-block">{{ form.precios.help_text }}</small>
+                        {% if form.precios.errors %}
+                            <div class="text-danger small">{{ form.precios.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.stock_inicial.id_for_label }}" class="form-label">
+                            <i class="fas fa-cubes"></i> Stock Inicial (opcional)
+                        </label>
+                        {{ form.stock_inicial }}
+                        <small class="text-muted">Si no se especifica, se crea con stock 0</small>
+                        {% if form.stock_inicial.errors %}
+                            <div class="text-danger small">{{ form.stock_inicial.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="d-flex justify-content-end gap-2">
+                        <a href="{% url 'contabilidad:presentacion_list' %}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-plus-circle"></i> Crear Presentaciones
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Perfumes sin presentaciones -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6><i class="fas fa-exclamation-triangle"></i> Perfumes sin presentaciones</h6>
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    {% for perfume in perfumes_sin_presentaciones %}
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>{{ perfume.nombre }}</strong>
+                            <br>
+                            <small class="text-muted">{{ perfume.marca }}</small>
+                        </div>
+                        <span class="badge bg-danger">Sin presentaciones</span>
+                    </div>
+                    {% empty %}
+                    <div class="list-group-item text-center text-muted">
+                        <i class="fas fa-check-circle text-success"></i>
+                        <br>Todos los perfumes tienen presentaciones
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // Ejemplo de cómo auto-completar el campo de precios
+        // Puedes agregar un botón para cargar un ejemplo
+        $('#id_perfume').on('change', function() {
+            // Si quieres, puedes hacer una llamada AJAX para obtener los precios recomendados
+            // basados en la configuración de decants
+        });
+        
+        // Validar formato en tiempo real
+        $('#id_precios').on('input', function() {
+            var valor = $(this).val();
+            // Aquí puedes agregar validación básica
+        });
+    });
+</script>
+{% endblock %}

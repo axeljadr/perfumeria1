@@ -1,5 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.admin.views.decorators import staff_member_required
+from django.http import JsonResponse
 from django.contrib import messages
 from django.db import transaction
 from catalogo.models import Presentacion
@@ -84,6 +85,8 @@ def registrar_pago(request, pk):
             pago = form.save(commit=False)
             pago.pedido = pedido
             pago.save()
+            pago.registrar_movimiento_contable()
+            pedido.actualizar_estado_pago()
             if pedido.saldo <= 0:
                 pedido.estado = 'liquidado'
                 pedido.save()
@@ -119,3 +122,44 @@ def eliminar_pago(request, pk):
     pago.delete()
     messages.success(request, 'Pago eliminado correctamente.')
     return redirect('apartados:detalle', pk=pedido_pk)
+
+
+@staff_member_required
+def buscar_presentaciones(request):
+    termino = request.GET.get('q', '').strip()
+
+    presentaciones = (
+        Presentacion.objects
+        .filter(activo=True)
+        .select_related('perfume')
+    )
+
+    if termino:
+        presentaciones = presentaciones.filter(
+            perfume__nombre__icontains=termino
+        ) | presentaciones.filter(
+            perfume__marca__icontains=termino
+        )
+
+    presentaciones = presentaciones.order_by(
+        'perfume__marca',
+        'perfume__nombre',
+        'volumen_ml',
+    )[:15]
+
+    resultados = []
+
+    for presentacion in presentaciones:
+        resultados.append({
+            'id': presentacion.id,
+            'nombre': (
+                f'{presentacion.perfume.marca} — '
+                f'{presentacion.perfume.nombre} · '
+                f'{presentacion.get_tipo_display()} '
+                f'{presentacion.volumen_ml} ml'
+            ),
+            'precio': str(presentacion.precio),
+            'stock': presentacion.stock,
+        })
+
+    return JsonResponse(resultados, safe=False)

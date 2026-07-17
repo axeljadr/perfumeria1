@@ -1,0 +1,194 @@
+{% extends 'contabilidad/base_contabilidad.html' %}
+
+{% block page_title %}Gestión de Presentaciones{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-boxes"></i> Presentaciones</h2>
+    <div>
+        <a href="{% url 'contabilidad:presentacion_batch_create' %}" class="btn btn-primary">
+            <i class="fas fa-plus-circle"></i> Crear Múltiples
+        </a>
+    </div>
+</div>
+
+<!-- Filtros -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">Perfume</label>
+                <select name="perfume" class="form-select">
+                    <option value="">Todos</option>
+                    {% for perfume in perfumes %}
+                    <option value="{{ perfume.id }}" {% if request.GET.perfume == perfume.id|stringformat:'s' %}selected{% endif %}>
+                        {{ perfume.marca }} - {{ perfume.nombre }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Tipo</label>
+                <select name="tipo" class="form-select">
+                    <option value="">Todos</option>
+                    <option value="decant" {% if request.GET.tipo == 'decant' %}selected{% endif %}>Decant</option>
+                    <option value="original" {% if request.GET.tipo == 'original' %}selected{% endif %}>Original</option>
+                    <option value="set" {% if request.GET.tipo == 'set' %}selected{% endif %}>Set</option>
+                    <option value="miniatura" {% if request.GET.tipo == 'miniatura' %}selected{% endif %}>Miniatura</option>
+                    <option value="otro" {% if request.GET.tipo == 'otro' %}selected{% endif %}>Otro</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Stock mínimo</label>
+                <select name="stock_bajo" class="form-select">
+                    <option value="">Todos</option>
+                    <option value="1" {% if request.GET.stock_bajo == '1' %}selected{% endif %}>Stock bajo (&lt; 5)</option>
+                    <option value="2" {% if request.GET.stock_bajo == '2' %}selected{% endif %}>Sin stock (0)</option>
+                </select>
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-secondary w-100">
+                    <i class="fas fa-search"></i> Filtrar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Resumen -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card card-stats border-primary">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="text-muted">Total Presentaciones</h6>
+                        <h3>{{ presentaciones.count }}</h3>
+                    </div>
+                    <div class="stat-icon text-primary">
+                        <i class="fas fa-boxes"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card card-stats border-success">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="text-muted">Stock Total</h6>
+                        <h3>{{ total_stock }}</h3>
+                    </div>
+                    <div class="stat-icon text-success">
+                        <i class="fas fa-cubes"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card card-stats border-warning">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="text-muted">Valor del Inventario</h6>
+                        <h3>${{ valor_inventario|floatformat:2 }}</h3>
+                    </div>
+                    <div class="stat-icon text-warning">
+                        <i class="fas fa-dollar-sign"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tabla -->
+<div class="card">
+    <div class="card-body p-0">
+        <table class="table table-hover datatable">
+            <thead>
+                <tr>
+                    <th>Perfume</th>
+                    <th>Tipo</th>
+                    <th>Volumen</th>
+                    <th>Precio</th>
+                    <th>Stock</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in presentaciones %}
+                <tr>
+                    <td>
+                        <strong>{{ p.perfume.nombre }}</strong>
+                        <br>
+                        <small class="text-muted">{{ p.perfume.marca }}</small>
+                    </td>
+                    <td>
+                        <span class="badge {% if p.tipo == 'original' %}bg-success{% elif p.tipo == 'decant' %}bg-info{% elif p.tipo == 'set' %}bg-warning{% else %}bg-secondary{% endif %}">
+                            {{ p.get_tipo_display }}
+                        </span>
+                    </td>
+                    <td>{{ p.volumen_ml }} ml</td>
+                    <td><strong>${{ p.precio }}</strong></td>
+                    <td>
+                        <span class="badge {% if p.stock > 10 %}bg-success{% elif p.stock > 0 %}bg-warning{% else %}bg-danger{% endif %}">
+                            {{ p.stock }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if p.activo %}
+                            <span class="badge bg-success">Activo</span>
+                        {% else %}
+                            <span class="badge bg-danger">Inactivo</span>
+                        {% endif %}
+                        {% if p.precio_automatico %}
+                            <span class="badge bg-info" title="Precio calculado automáticamente">
+                                <i class="fas fa-robot"></i> Auto
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'contabilidad:presentacion_update' p.pk %}" class="btn btn-sm btn-outline-primary" title="Editar">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <button class="btn btn-sm btn-outline-danger" title="Eliminar" 
+                                onclick="if(confirm('¿Eliminar esta presentación?')){ window.location.href='#'; }">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="text-center text-muted py-4">
+                        <i class="fas fa-inbox fa-2x d-block mb-2"></i>
+                        No hay presentaciones registradas
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // Calcular valor total del inventario dinámicamente (opcional)
+        $('.datatable').DataTable({
+            language: {
+                url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json'
+            },
+            pageLength: 25,
+            responsive: true,
+            columnDefs: [
+                { orderable: false, targets: [7] }  // Deshabilitar orden en columna de acciones
+            ]
+        });
+    });
+</script>
+{% endblock %}
