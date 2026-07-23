@@ -1,140 +1,513 @@
-{% extends 'base.html' %}
-{% load static %}
-
-{% block title %}Pedido {{ pedido.folio }}{% endblock %}
-
-{% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/tablas.css' %}">
-{% endblock %}
-
-{% block content %}
+{% extends 'base.html' %} {% load static %} {% block title %}Pedido {{
+pedido.folio }}{% endblock %} {% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/tablas.css' %}" />
+{% endblock %} {% block content %}
 <div class="cotizacion-container">
-    <div class="cotizacion-header">
-        <div>
-            <p style="font-size:0.7rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--gris-claro);">Pedido</p>
-            <h1>{{ pedido.folio }}</h1>
-            <small>{{ pedido.cliente_nombre }} · {{ pedido.cliente_telefono }}</small>
-        </div>
-        <div class="cotizacion-acciones" style="flex-direction:column;align-items:flex-end;gap:0.5rem;">
-            <span style="font-size:0.72rem;letter-spacing:0.15em;text-transform:uppercase;">
-                Estado: <strong>{{ pedido.get_estado_display }}</strong>
-            </span>
-            {% if pedido.estado != 'entregado' and pedido.estado != 'cancelado' %}
-            <a href="{% url 'apartados:registrar_pago' pedido.pk %}" class="btn-primary btn-sm">Registrar pago</a>
-            {% endif %}
-        </div>
+  <div class="cotizacion-header">
+    <div>
+      <p
+        style="
+          font-size: 0.7rem;
+          letter-spacing: 0.2em;
+          text-transform: uppercase;
+          color: var(--gris-claro);
+        "
+      >
+        Pedido
+      </p>
+      <h1>{{ pedido.folio }}</h1>
+      <small>{{ pedido.cliente_nombre }} · {{ pedido.cliente_telefono }}</small>
     </div>
+    <div
+      class="cotizacion-acciones"
+      style="flex-direction: column; align-items: flex-end; gap: 0.5rem"
+    >
+      <span
+        style="
+          font-size: 0.72rem;
+          letter-spacing: 0.15em;
+          text-transform: uppercase;
+        "
+      >
+        Estado: <strong>{{ pedido.get_estado_display }}</strong>
+      </span>
+      {% if pedido.estado != 'entregado' and pedido.estado != 'cancelado' %}
+      <a
+        href="{% url 'apartados:registrar_pago' pedido.pk %}"
+        class="btn-primary btn-sm"
+        >Registrar pago</a
+      >
+      {% endif %}
+    </div>
+  </div>
 
-    {% if pedido.cliente_ref or pedido.notas %}
-    <div style="background:var(--blanco);border:1px solid #e0e0e0;padding:1.2rem;margin-bottom:1.5rem;font-size:0.85rem;line-height:1.6;">
-        {% if pedido.cliente_ref %}<p><strong>Referencia:</strong> {{ pedido.cliente_ref }}</p>{% endif %}
-        {% if pedido.notas %}<p><strong>Notas:</strong> {{ pedido.notas }}</p>{% endif %}
-    </div>
+  {% if pedido.cliente_ref or pedido.notas %}
+  <div
+    style="
+      background: var(--blanco);
+      border: 1px solid #e0e0e0;
+      padding: 1.2rem;
+      margin-bottom: 1.5rem;
+      font-size: 0.85rem;
+      line-height: 1.6;
+    "
+  >
+    {% if pedido.cliente_ref %}
+    <p><strong>Referencia:</strong> {{ pedido.cliente_ref }}</p>
+    {% endif %} {% if pedido.notas %}
+    <p><strong>Notas:</strong> {{ pedido.notas }}</p>
     {% endif %}
+  </div>
+  {% endif %}
 
-    <h3 style="font-family:var(--font-serif);font-size:1rem;letter-spacing:0.15em;text-transform:uppercase;margin-bottom:1rem;">Productos</h3>
-    <div class="tabla-wrapper">
-        <table class="tabla-cotizacion">
-            <thead>
-                <tr>
-                    <th class="th-perfume">Presentación</th>
-                    <th>Cantidad</th>
-                    <th>Precio unitario</th>
-                    <th>Subtotal</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for item in pedido.items.all %}
-                <tr>
-                    <td class="td-perfume">{{ item.presentacion }}</td>
-                    <td>{{ item.cantidad }}</td>
-                    <td>${{ item.precio_unitario|floatformat:2 }}</td>
-                    <td>${{ item.subtotal|floatformat:2 }}</td>
-                </tr>
-                {% endfor %}
-                <tr class="fila-total">
-                    <td colspan="3" style="text-align:right;padding-right:1.5rem;">Total del pedido</td>
-                    <td class="total-col">${{ pedido.total|floatformat:2 }}</td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
+  <h3
+    style="
+      font-family: var(--font-serif);
+      font-size: 1rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+    "
+  >
+    Productos
+  </h3>
+  <div class="tabla-wrapper">
+    <table class="tabla-cotizacion">
+      <thead>
+        <tr>
+          <th class="th-perfume">Presentación</th>
+          <th>Cantidad</th>
+          <th>Precio unitario</th>
+          <th>Subtotal</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in pedido.items.all %}
+        <tr>
+          <td class="td-perfume">{{ item.presentacion }}</td>
+          <td>{{ item.cantidad }}</td>
+          <td>${{ item.precio_unitario|floatformat:2 }}</td>
+          <td>${{ item.subtotal|floatformat:2 }}</td>
+        </tr>
+        {% endfor %}
+        <tr class="fila-total">
+          <td colspan="3" style="text-align: right; padding-right: 1.5rem">
+            Total del pedido
+          </td>
+          <td class="total-col">${{ pedido.total|floatformat:2 }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 
-    <h3 style="font-family:var(--font-serif);font-size:1rem;letter-spacing:0.15em;text-transform:uppercase;margin:2rem 0 1rem;">Pagos</h3>
-    <div class="tabla-wrapper">
-        <table class="tabla-cotizacion">
-            <thead>
-                <tr>
-                    <th>Fecha</th>
-                    <th>Monto</th>
-                    <th>Método</th>
-                    <th>Comprobante</th>
-                    <th>Observaciones</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for pago in pedido.pagos.all %}
-                <tr>
-                    <td>{{ pago.fecha|date:"d/m/Y" }}</td>
-                    <td style="color:#2d6a2d;font-weight:600;">${{ pago.monto|floatformat:2 }}</td>
-                    <td>{{ pago.get_metodo_display }}</td>
-                    <td>
-                        {% if pago.comprobante %}
-                        <a href="{{ pago.comprobante.url }}" target="_blank" style="font-size:0.72rem;">Ver imagen</a>
-                        {% else %}—{% endif %}
-                    </td>
-                    <td style="font-size:0.78rem;color:var(--gris-medio);">{{ pago.observaciones|default:"—" }}</td>
-                    <td>
-                        <form method="post" action="{% url 'apartados:eliminar_pago' pago.pk %}" onsubmit="return confirm('¿Eliminar este pago?');" style="display:inline;">
-                            {% csrf_token %}
-                            <button type="submit" class="btn-quitar">×</button>
-                        </form>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="6" class="sin-resultados" style="text-align:center;padding:2rem;">Sin pagos registrados.</td>
-                </tr>
-                {% endfor %}
-                <tr class="fila-total">
-                    <td style="text-align:right;padding-right:1.5rem;">Total pagado</td>
-                    <td class="total-col">${{ pedido.total_pagado|floatformat:2 }}</td>
-                    <td colspan="4"></td>
-                </tr>
-                <tr class="fila-total" style="background:#fffdf5;">
-                    <td style="text-align:right;padding-right:1.5rem;">Saldo</td>
-                    <td style="color:var(--dorado);font-family:var(--font-serif);font-size:1.1rem;">${{ pedido.saldo|floatformat:2 }}</td>
-                    <td colspan="4"></td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
+  <h3
+    style="
+      font-family: var(--font-serif);
+      font-size: 1rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin: 2rem 0 1rem;
+    "
+  >
+    Pagos
+  </h3>
+  <div class="tabla-wrapper">
+    <table class="tabla-cotizacion">
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th>Monto</th>
+          <th>Método</th>
+          <th>Comprobante</th>
+          <th>Observaciones</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for pago in pedido.pagos.all %}
+        <tr>
+          <td>{{ pago.fecha|date:"d/m/Y" }}</td>
+          <td style="color: #2d6a2d; font-weight: 600">
+            ${{ pago.monto|floatformat:2 }}
+          </td>
+          <td>{{ pago.get_metodo_display }}</td>
+          <td>
+            {% if pago.comprobante %}
+            <a
+              href="{{ pago.comprobante.url }}"
+              target="_blank"
+              style="font-size: 0.72rem"
+              >Ver imagen</a
+            >
+            {% else %}—{% endif %}
+          </td>
+          <td style="font-size: 0.78rem; color: var(--gris-medio)">
+            {{ pago.observaciones|default:"—" }}
+          </td>
+          <td>
+            <form
+              method="post"
+              action="{% url 'apartados:eliminar_pago' pago.pk %}"
+              onsubmit="return confirm('¿Eliminar este pago?');"
+              style="display: inline"
+            >
+              {% csrf_token %}
+              <button type="submit" class="btn-quitar">×</button>
+            </form>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td
+            colspan="6"
+            class="sin-resultados"
+            style="text-align: center; padding: 2rem"
+          >
+            Sin pagos registrados.
+          </td>
+        </tr>
+        {% endfor %}
+        <tr class="fila-total">
+          <td style="text-align: right; padding-right: 1.5rem">Total pagado</td>
+          <td class="total-col">${{ pedido.total_pagado|floatformat:2 }}</td>
+          <td colspan="4"></td>
+        </tr>
+        <tr class="fila-total" style="background: #fffdf5">
+          <td style="text-align: right; padding-right: 1.5rem">Saldo</td>
+          <td
+            style="
+              color: var(--dorado);
+              font-family: var(--font-serif);
+              font-size: 1.1rem;
+            "
+          >
+            ${{ pedido.saldo|floatformat:2 }}
+          </td>
+          <td colspan="4"></td>
+        </tr>
+      </tbody>
+    </table>
+    {% if pedido.saldo > 0 and pedido.estado not in 'entregado,cancelado' %}
+    <form
+      method="post"
+      action="{% url 'apartados:liquidar_pedido' pedido.pk %}"
+      onsubmit="return confirm('¿Confirmas liquidar el saldo restante de ${{ pedido.saldo }}?')"
+    >
+      {% csrf_token %}
 
-    {% if pedido.estado != 'cancelado' %}
-    <div style="margin-top:2rem;display:flex;gap:1rem;flex-wrap:wrap;">
-        {% if pedido.estado == 'abierto' %}
-        <form method="post" action="{% url 'apartados:cambiar_estado' pedido.pk %}" style="display:inline;">
-            {% csrf_token %}
-            <input type="hidden" name="estado" value="cancelado">
-            <button type="submit" class="btn-secondary">Marcar cancelado</button>
-        </form>
-        {% endif %}
-        {% if pedido.estado == 'liquidado' %}
-        <form method="post" action="{% url 'apartados:cambiar_estado' pedido.pk %}" style="display:inline;">
-            {% csrf_token %}
-            <input type="hidden" name="estado" value="entregado">
-            <button type="submit" class="btn-primary">Entregar perfume</button>
-        </form>
-        {% endif %}
-        {% if pedido.estado == 'abierto' and pedido.saldo <= 0 %}
-        <form method="post" action="{% url 'apartados:cambiar_estado' pedido.pk %}" style="display:inline;">
-            {% csrf_token %}
-            <input type="hidden" name="estado" value="liquidado">
-            <button type="submit" class="btn-primary">Confirmar liquidación</button>
-        </form>
-        {% endif %}
-    </div>
+      <div
+        style="
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          flex-wrap: wrap;
+          margin-top: 0.75rem;
+        "
+      >
+        <select
+          name="metodo"
+          style="
+            padding: 0.4rem 0.75rem;
+            border: 1px solid #ced4da;
+            border-radius: 0.35rem;
+            font-size: 0.85rem;
+          "
+        >
+          <option value="efectivo">Efectivo</option>
+          <option value="transferencia">Transferencia</option>
+          <option value="deposito">Depósito</option>
+        </select>
+
+        <button
+          type="submit"
+          style="
+            background: #0a0a0a;
+            color: #fff;
+            border: none;
+            padding: 0.45rem 1.2rem;
+            border-radius: 0.35rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.15s;
+          "
+          onmouseover="this.style.background = '#c5a059'"
+          onmouseout="this.style.background = '#0a0a0a'"
+        >
+          Liquidar ${{ pedido.saldo }}
+        </button>
+      </div>
+    </form>
     {% endif %}
+  </div>
+
+  {% if pedido.estado != 'cancelado' %}
+  <div style="margin-top: 2rem; display: flex; gap: 1rem; flex-wrap: wrap">
+    {% if pedido.estado == 'abierto' %}
+    <form
+      method="post"
+      action="{% url 'apartados:cambiar_estado' pedido.pk %}"
+      style="display: inline"
+    >
+      {% csrf_token %}
+      <input type="hidden" name="estado" value="cancelado" />
+      <button type="submit" class="btn-secondary">Marcar cancelado</button>
+    </form>
+    {% endif %} {% if pedido.estado == 'liquidado' %}
+    <form
+      method="post"
+      action="{% url 'apartados:cambiar_estado' pedido.pk %}"
+      style="display: inline"
+    >
+      {% csrf_token %}
+      <input type="hidden" name="estado" value="entregado" />
+      <button type="submit" class="btn-primary">Entregar perfume</button>
+    </form>
+    {% endif %} {% if pedido.estado == 'abierto' and pedido.saldo <= 0 %}
+    <form
+      method="post"
+      action="{% url 'apartados:cambiar_estado' pedido.pk %}"
+      style="display: inline"
+    >
+      {% csrf_token %}
+      <input type="hidden" name="estado" value="liquidado" />
+      <button type="submit" class="btn-primary">Confirmar liquidación</button>
+    </form>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  <!-- ── Sección QR ── -->
+  <div
+    style="
+      margin-top: 2.5rem;
+      border-top: 1px solid #e0e0e0;
+      padding-top: 2rem;
+      display: flex;
+      gap: 2rem;
+      align-items: flex-start;
+      flex-wrap: wrap;
+    "
+  >
+    <!-- QR image + acciones -->
+    <div
+      style="
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.75rem;
+      "
+    >
+      {% if pedido.codigo_qr %}
+      <img
+        src="{{ pedido.codigo_qr.url }}"
+        alt="QR {{ pedido.folio }}"
+        style="
+          width: 160px;
+          height: 160px;
+          border: 1px solid #e0e0e0;
+          padding: 6px;
+          background: #fff;
+        "
+      />
+      <div
+        style="
+          display: flex;
+          gap: 0.5rem;
+          flex-wrap: wrap;
+          justify-content: center;
+        "
+      >
+        <!-- Descargar QR -->
+        <a
+          href="{{ pedido.codigo_qr.url }}"
+          download="QR-{{ pedido.folio }}.png"
+          style="
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.75rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            padding: 0.4rem 0.9rem;
+            border: 1px solid #0a0a0a;
+            color: #0a0a0a;
+            text-decoration: none;
+            transition:
+              background 0.15s,
+              color 0.15s;
+          "
+          onmouseover="
+            this.style.background = '#0a0a0a';
+            this.style.color = '#fff';
+          "
+          onmouseout="
+            this.style.background = 'transparent';
+            this.style.color = '#0a0a0a';
+          "
+        >
+          <svg
+            width="13"
+            height="13"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="7 10 12 15 17 10" />
+            <line x1="12" y1="15" x2="12" y2="3" />
+          </svg>
+          Guardar QR
+        </a>
+        <!-- Ver página pública -->
+        <a
+          href="{{ pedido.url_publica }}"
+          target="_blank"
+          style="
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.75rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            padding: 0.4rem 0.9rem;
+            border: 1px solid #c5a059;
+            color: #c5a059;
+            text-decoration: none;
+            transition:
+              background 0.15s,
+              color 0.15s;
+          "
+          onmouseover="
+            this.style.background = '#c5a059';
+            this.style.color = '#fff';
+          "
+          onmouseout="
+            this.style.background = 'transparent';
+            this.style.color = '#c5a059';
+          "
+        >
+          <svg
+            width="13"
+            height="13"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path
+              d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"
+            />
+            <polyline points="15 3 21 3 21 9" />
+            <line x1="10" y1="14" x2="21" y2="3" />
+          </svg>
+          Ver página
+        </a>
+      </div>
+      {% else %}
+      <div
+        style="
+          width: 160px;
+          height: 160px;
+          border: 1px dashed #ccc;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #aaa;
+          font-size: 0.75rem;
+          text-align: center;
+          padding: 1rem;
+        "
+      >
+        Sin código QR generado
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Info + botón regenerar -->
+    <div style="flex: 1; min-width: 200px">
+      <p
+        style="
+          font-size: 0.68rem;
+          letter-spacing: 0.18em;
+          text-transform: uppercase;
+          color: var(--gris-claro);
+          margin-bottom: 0.4rem;
+        "
+      >
+        Código QR del pedido
+      </p>
+      <p
+        style="
+          font-size: 0.85rem;
+          color: var(--gris-medio);
+          line-height: 1.6;
+          margin-bottom: 1rem;
+        "
+      >
+        Escanea este código para ver la página pública del pedido con todos los
+        detalles del perfume. {% if pedido.estado == 'entregado' %} Al marcar
+        como entregado el QR se genera automáticamente. {% endif %}
+      </p>
+
+      <!-- Regenerar QR (siempre disponible) -->
+      <form
+        method="post"
+        action="{% url 'apartados:cambiar_estado' pedido.pk %}"
+        style="display: inline"
+      >
+        {% csrf_token %}
+        <input type="hidden" name="estado" value="{{ pedido.estado }}" />
+        <input type="hidden" name="regenerar_qr" value="1" />
+        <button
+          type="submit"
+          style="
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.75rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            padding: 0.4rem 0.9rem;
+            border: 1px solid #888;
+            background: transparent;
+            color: #555;
+            cursor: pointer;
+            transition:
+              border-color 0.15s,
+              color 0.15s;
+          "
+          onmouseover="
+            this.style.borderColor = '#0a0a0a';
+            this.style.color = '#0a0a0a';
+          "
+          onmouseout="
+            this.style.borderColor = '#888';
+            this.style.color = '#555';
+          "
+        >
+          <svg
+            width="13"
+            height="13"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <polyline points="23 4 23 10 17 10" />
+            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+          </svg>
+          Regenerar QR
+        </button>
+      </form>
+    </div>
+  </div>
 </div>
 {% endblock %}

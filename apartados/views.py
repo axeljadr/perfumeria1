@@ -6,6 +6,9 @@ from django.db import transaction
 from catalogo.models import Presentacion
 from .models import PedidoApartado, PedidoApartadoItem, PagoApartado
 from .forms import PedidoApartadoForm, PedidoApartadoItemFormSet, PagoApartadoForm
+from django.contrib.auth.decorators import login_required
+from django.utils import timezone
+import uuid
 
 
 def lista_pedidos(request):
@@ -29,7 +32,7 @@ def crear_pedido(request):
         form = PedidoApartadoForm(request.POST)
         formset = PedidoApartadoItemFormSet(request.POST, prefix='items')
         if form.is_valid() and formset.is_valid():
-            pedido = form.save()  # ← guarda primero el pedido
+            pedido = form.save()  # ← guarda primero el pedido (genera folio + token + QR)
 
             # ← ahora sí asigna el pedido al formset y guarda
             formset.instance = pedido
@@ -41,6 +44,13 @@ def crear_pedido(request):
                 item.save()
             for deleted in formset.deleted_objects:
                 deleted.delete()
+
+            # Regenerar el QR ahora que los ítems ya existen
+            # (el modelo lo genera en save(), pero aquí lo forzamos
+            # por si la URL pública necesita estar ya guardada).
+            if not pedido.codigo_qr:
+                pedido.generar_codigo_qr()
+                pedido.save(update_fields=['codigo_qr'])
 
             messages.success(request, f'Pedido {pedido.folio} creado correctamente.')
             return redirect('apartados:detalle', pk=pedido.pk)
@@ -106,13 +116,45 @@ def registrar_pago(request, pk):
 @staff_member_required
 def cambiar_estado(request, pk):
     pedido = get_object_or_404(PedidoApartado, pk=pk)
-    if request.method == 'POST':
-        nuevo = request.POST.get('estado')
-        if nuevo in dict(PedidoApartado.ESTADO_CHOICES):
-            pedido.estado = nuevo
-            pedido.save()
-            messages.success(request, f'Estado actualizado a {pedido.get_estado_display()}.')
-    return redirect('apartados:detalle', pk=pk)
+
+    if request.method != 'POST':
+        return redirect('apartados:detalle', pk=pedido.pk)
+
+    nuevo_estado = request.POST.get('estado')
+    regenerar_qr = request.POST.get('regenerar_qr') == '1'
+
+    # Permite regenerar el QR sin modificar el estado del pedido.
+    if regenerar_qr:
+        pedido.generar_codigo_qr()
+        pedido.save(update_fields=['codigo_qr'])
+
+        messages.success(
+            request,
+            f'Código QR del pedido {pedido.folio} generado correctamente.'
+        )
+        return redirect('apartados:detalle', pk=pedido.pk)
+
+    estados_validos = dict(PedidoApartado.ESTADO_CHOICES)
+
+    if nuevo_estado not in estados_validos:
+        messages.error(request, 'El estado seleccionado no es válido.')
+        return redirect('apartados:detalle', pk=pedido.pk)
+
+    pedido.estado = nuevo_estado
+
+    # Al entregar, se crea un QR si todavía no existe.
+    if nuevo_estado == 'entregado' and not pedido.codigo_qr:
+        pedido.generar_codigo_qr()
+        pedido.save(update_fields=['estado', 'codigo_qr'])
+    else:
+        pedido.save(update_fields=['estado'])
+
+    messages.success(
+        request,
+        f'Pedido {pedido.folio} actualizado a: {pedido.get_estado_display()}.'
+    )
+
+    return redirect('apartados:detalle', pk=pedido.pk)
 
 
 @staff_member_required
@@ -163,3 +205,72 @@ def buscar_presentaciones(request):
         })
 
     return JsonResponse(resultados, safe=False)
+
+
+
+@login_required
+@transaction.atomic
+def liquidar_pedido(request, pk):
+    """
+    Registra un pago por el saldo restante del pedido
+    y lo contabiliza automáticamente.
+    Solo acepta POST para evitar liquidaciones accidentales.
+    """
+    pedido = get_object_or_404(PedidoApartado, pk=pk)
+
+    if request.method != 'POST':
+        return redirect('apartados:detalle_pedido', pk=pk)
+
+    saldo = pedido.saldo
+
+    if saldo <= 0:
+        messages.warning(request, 'Este pedido ya no tiene saldo pendiente.')
+        return redirect('apartados:detalle_pedido', pk=pk)
+
+    if pedido.estado in ['entregado', 'cancelado']:
+        messages.error(request, 'No se puede liquidar un pedido entregado o cancelado.')
+        return redirect('apartados:detalle_pedido', pk=pk)
+
+    # Crea el pago por el saldo restante
+    metodo = request.POST.get('metodo', 'efectivo')
+    pago = PagoApartado.objects.create(
+        pedido=pedido,
+        fecha=timezone.now().date(),
+        monto=saldo,
+        metodo=metodo,
+        observaciones='Liquidación total del saldo pendiente.'
+    )
+
+    # Registra en contabilidad y actualiza estado
+    pago.registrar_movimiento_contable()
+    pedido.actualizar_estado_pago()
+
+    messages.success(
+        request,
+        f'Pedido {pedido.folio} liquidado correctamente. '
+        f'Se registró un pago de ${saldo} por {pago.get_metodo_display().lower()}.'
+    )
+    return redirect('apartados:detalle', pk=pk)
+
+def pedido_publico(request, token):
+    """
+    Vista pública: accesible sin login mediante el token UUID del QR.
+    Muestra solo la información del pedido relevante para el cliente.
+    """
+    pedido = get_object_or_404(
+        PedidoApartado.objects.prefetch_related(
+    'items',
+    'items__presentacion',
+    'items__presentacion__perfume',
+    'items__presentacion__perfume__acordes',
+    'items__presentacion__perfume__notas',
+    'items__presentacion__perfume__familia_olfativa',
+    ),
+        token_publico=token,
+    )
+
+    return render(
+        request,
+        'apartados/pedido_publico.html',
+        {'pedido': pedido},
+    )

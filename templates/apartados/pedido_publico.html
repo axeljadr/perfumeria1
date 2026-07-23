@@ -1,0 +1,711 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pedido {{ pedido.folio }}</title>
+    <style>
+      /* ── Reset & Base ── */
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      :root {
+        --cream: #faf8f5;
+        --white: #ffffff;
+        --ink: #1a1a1a;
+        --muted: #6b6560;
+        --border: #e8e3dc;
+        --accent: #b8956a;
+        --accent-l: #f0e8dc;
+        --radius: 12px;
+        --shadow: 0 2px 24px rgba(0, 0, 0, 0.07);
+      }
+
+      html {
+        font-size: 16px;
+      }
+
+      body {
+        background: var(--cream);
+        color: var(--ink);
+        font-family: "Georgia", "Times New Roman", serif;
+        min-height: 100vh;
+        padding: 2rem 1rem 4rem;
+      }
+
+      /* ── Layout ── */
+      .container {
+        max-width: 720px;
+        margin: 0 auto;
+      }
+
+      /* ── Header ── */
+      .header {
+        text-align: center;
+        padding: 3rem 2rem 2.5rem;
+        background: var(--white);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        margin-bottom: 1.5rem;
+        border-top: 3px solid var(--accent);
+      }
+
+      .brand-mark {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .brand-mark svg {
+        width: 28px;
+        height: 28px;
+        color: var(--accent);
+      }
+
+      .brand-name {
+        font-size: 0.75rem;
+        letter-spacing: 0.25em;
+        text-transform: uppercase;
+        color: var(--muted);
+        font-family: "Helvetica Neue", Arial, sans-serif;
+      }
+
+      .header h1 {
+        font-size: 1.75rem;
+        font-weight: 400;
+        letter-spacing: 0.04em;
+        color: var(--ink);
+        margin-bottom: 0.5rem;
+      }
+
+      .header .folio {
+        font-family: "Helvetica Neue", Arial, sans-serif;
+        font-size: 0.8rem;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+
+      /* ── Estado badge ── */
+      .estado-wrap {
+        margin-top: 1.25rem;
+        display: flex;
+        justify-content: center;
+      }
+
+      .estado {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        padding: 0.35rem 1rem;
+        border-radius: 999px;
+        font-family: "Helvetica Neue", Arial, sans-serif;
+        font-size: 0.72rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        font-weight: 600;
+      }
+
+      .estado-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+      }
+
+      .estado--abierto {
+        background: #fef3e2;
+        color: #92600a;
+      }
+      .estado--abierto .estado-dot {
+        background: #f59e0b;
+      }
+      .estado--liquidado {
+        background: #e8f5e9;
+        color: #2e7d32;
+      }
+      .estado--liquidado .estado-dot {
+        background: #4caf50;
+      }
+      .estado--entregado {
+        background: #e3f2fd;
+        color: #1565c0;
+      }
+      .estado--entregado .estado-dot {
+        background: #2196f3;
+      }
+      .estado--cancelado {
+        background: #fce4ec;
+        color: #b71c1c;
+      }
+      .estado--cancelado .estado-dot {
+        background: #e53935;
+      }
+
+      /* ── Info cliente ── */
+      .card {
+        background: var(--white);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        padding: 1.75rem 2rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .card-title {
+        font-family: "Helvetica Neue", Arial, sans-serif;
+        font-size: 0.68rem;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--accent);
+        margin-bottom: 1.25rem;
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+      }
+
+      .card-title::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: var(--border);
+      }
+
+      .info-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.75rem 1.5rem;
+      }
+
+      @media (max-width: 480px) {
+        .info-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .info-item label {
+        display: block;
+        font-family: "Helvetica Neue", Arial, sans-serif;
+        font-size: 0.68rem;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 0.2rem;
+      }
+
+      .info-item span {
+        font-size: 0.95rem;
+        color: var(--ink);
+      }
+
+      /* ── Productos ── */
+      .producto {
+        background: var(--white);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        margin-bottom: 1.25rem;
+        overflow: hidden;
+      }
+
+      .producto-header {
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        align-items: center;
+        gap: 1rem;
+        padding: 1.5rem 2rem;
+        cursor: pointer;
+        user-select: none;
+      }
+
+      .producto-num {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: var(--accent-l);
+        color: var(--accent);
+        font-family: "Helvetica Neue", Arial, sans-serif;
+        font-size: 0.8rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+
+      .producto-info {
+        min-width: 0;
+      }
+
+      .producto-nombre {
+        font-size: 1.05rem;
+        font-weight: 400;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .producto-sub {
+        font-family: "Helvetica Neue", Arial, sans-serif;
+        font-size: 0.75rem;
+        color: var(--muted);
+        margin-top: 0.2rem;
+      }
+
+      .producto-precio {
+        text-align: right;
+        flex-shrink: 0;
+      }
+
+      .producto-precio .subtotal {
+        font-size: 1.05rem;
+        color: var(--ink);
+      }
+
+      .producto-precio .unitario {
+        font-family: "Helvetica Neue", Arial, sans-serif;
+        font-size: 0.72rem;
+        color: var(--muted);
+        margin-top: 0.15rem;
+      }
+
+      .chevron {
+        transition: transform 0.3s ease;
+        color: var(--muted);
+        flex-shrink: 0;
+      }
+
+      /* ── Detalle olfativo (acordeón) ── */
+      .producto-detalle {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.4s ease;
+      }
+
+      .producto-detalle.open {
+        max-height: 800px;
+      }
+
+      .producto-detalle.open ~ .producto-header .chevron {
+        transform: rotate(180deg);
+      }
+
+      .detalle-inner {
+        border-top: 1px solid var(--border);
+        padding: 1.5rem 2rem;
+        background: var(--cream);
+      }
+
+      .detalle-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem 2rem;
+      }
+
+      @media (max-width: 480px) {
+        .detalle-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .detalle-item label {
+        font-family: "Helvetica Neue", Arial, sans-serif;
+        font-size: 0.65rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--accent);
+        display: block;
+        margin-bottom: 0.35rem;
+      }
+
+      .detalle-item p {
+        font-size: 0.88rem;
+        color: var(--ink);
+        line-height: 1.5;
+      }
+
+      .tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+        margin-top: 0.35rem;
+      }
+
+      .tag {
+        background: var(--accent-l);
+        color: var(--accent);
+        font-family: "Helvetica Neue", Arial, sans-serif;
+        font-size: 0.68rem;
+        letter-spacing: 0.06em;
+        padding: 0.25rem 0.65rem;
+        border-radius: 999px;
+      }
+
+      .perfil-row {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        margin-top: 0.35rem;
+      }
+
+      .perfil-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        background: var(--white);
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        padding: 0.25rem 0.75rem;
+        font-family: "Helvetica Neue", Arial, sans-serif;
+        font-size: 0.7rem;
+        color: var(--muted);
+      }
+
+      .perfil-badge svg {
+        width: 12px;
+        height: 12px;
+        color: var(--accent);
+      }
+
+      /* ── Descripción ── */
+      .descripcion {
+        grid-column: 1 / -1;
+        font-size: 0.88rem;
+        color: var(--muted);
+        line-height: 1.7;
+        font-style: italic;
+        border-left: 2px solid var(--accent);
+        padding-left: 1rem;
+        margin-top: 0.5rem;
+      }
+
+      /* ── Totales ── */
+      .totales {
+        background: var(--white);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        padding: 1.5rem 2rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .totales-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.5rem 0;
+        font-family: "Helvetica Neue", Arial, sans-serif;
+        font-size: 0.88rem;
+        color: var(--muted);
+        border-bottom: 1px solid var(--border);
+      }
+
+      .totales-row:last-child {
+        border-bottom: none;
+      }
+
+      .totales-row.total-final {
+        font-size: 1.1rem;
+        color: var(--ink);
+        font-weight: 700;
+        padding-top: 0.85rem;
+      }
+
+      .totales-row.saldo-row {
+        color: var(--accent);
+        font-weight: 600;
+      }
+
+      /* ── Footer ── */
+      .footer {
+        text-align: center;
+        padding-top: 1rem;
+      }
+
+      .footer p {
+        font-family: "Helvetica Neue", Arial, sans-serif;
+        font-size: 0.72rem;
+        letter-spacing: 0.08em;
+        color: var(--muted);
+      }
+
+      .divider {
+        width: 40px;
+        height: 1px;
+        background: var(--border);
+        margin: 1rem auto;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <!-- Header -->
+      <div class="header">
+        <div class="brand-mark">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.4"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M9 3c0 0 1-1 3-1s3 1 3 1" />
+            <path d="M12 2v4" />
+            <path
+              d="M5 8h14l-1.5 10.5A2 2 0 0 1 15.52 20H8.48a2 2 0 0 1-1.98-1.5L5 8z"
+            />
+            <path d="M8 8c0-2 1.5-4 4-4s4 2 4 4" />
+          </svg>
+          <span class="brand-name">Arabes en Reynosa</span>
+        </div>
+        <h1>Resumen de pedido</h1>
+        <p class="folio">{{ pedido.folio }}</p>
+        <div class="estado-wrap">
+          <span class="estado estado--{{ pedido.estado }}">
+            <span class="estado-dot"></span>
+            {{ pedido.get_estado_display }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Info cliente -->
+      <div class="card">
+        <div class="card-title">Cliente</div>
+        <div class="info-grid">
+          <div class="info-item">
+            <label>Nombre</label>
+            <span>{{ pedido.cliente_nombre }}</span>
+          </div>
+          {% if pedido.cliente_telefono %}
+          <div class="info-item">
+            <label>Teléfono</label>
+            <span>{{ pedido.cliente_telefono }}</span>
+          </div>
+          {% endif %} {% if pedido.cliente_ref %}
+          <div class="info-item">
+            <label>Referencia</label>
+            <span>{{ pedido.cliente_ref }}</span>
+          </div>
+          {% endif %}
+          <div class="info-item">
+            <label>Fecha</label>
+            <span>{{ pedido.fecha_creacion|date:"d \d\e F, Y" }}</span>
+          </div>
+        </div>
+        {% if pedido.notas %}
+        <div
+          style="
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+          "
+        >
+          <div class="info-item">
+            <label>Notas del pedido</label>
+            <span style="font-style: italic; color: var(--muted)"
+              >{{ pedido.notas }}</span
+            >
+          </div>
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Productos -->
+      <div class="card-title" style="padding: 0 0.25rem; margin-bottom: 1rem">
+        Productos
+      </div>
+
+      {% for item in pedido.items.all %} {% with p=item.presentacion.perfume
+      pres=item.presentacion %}
+      <div class="producto">
+        <div class="producto-header" onclick="toggleDetalle(this)">
+          <div class="producto-num">{{ forloop.counter }}</div>
+          <div class="producto-info">
+            <div class="producto-nombre">{{ p.marca }} — {{ p.nombre }}</div>
+            <div class="producto-sub">
+              {{ pres.get_tipo_display }} · {{ pres.volumen_ml }} ml · x{{
+              item.cantidad }}
+            </div>
+          </div>
+          <div class="producto-precio">
+            <div class="subtotal">${{ item.subtotal }}</div>
+            <div class="unitario">${{ item.precio_unitario }} c/u</div>
+          </div>
+          <svg
+            class="chevron"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <polyline points="6 9 12 15 18 9" />
+          </svg>
+        </div>
+
+        <div class="producto-detalle">
+          <div class="detalle-inner">
+            <div class="detalle-grid">
+              {% if p.descripcion %}
+              <p class="descripcion">{{ p.descripcion }}</p>
+              {% endif %} {% if p.familia_olfativa %}
+              <div class="detalle-item">
+                <label>Familia olfativa</label>
+                <p>{{ p.familia_olfativa }}</p>
+              </div>
+              {% endif %} {% if p.genero %}
+              <div class="detalle-item">
+                <label>Género</label>
+                <p>{{ p.get_genero_display }}</p>
+              </div>
+              {% endif %} {% with acordes=p.acordes.all %} {% if acordes %}
+              <div class="detalle-item" style="grid-column: 1 / -1">
+                <label>Acordes principales</label>
+                <div class="tags">
+                  {% for acorde in acordes %}
+                  <span class="tag">{{ acorde }}</span>
+                  {% endfor %}
+                </div>
+              </div>
+              {% endif %} {% endwith %} {% with notas=p.notas.all %} {% if notas
+              %}
+              <div class="detalle-item" style="grid-column: 1 / -1">
+                <label>Notas</label>
+                <div class="tags">
+                  {% for nota in notas %}
+                  <span class="tag">{{ nota }}</span>
+                  {% endfor %}
+                </div>
+              </div>
+              {% endif %} {% endwith %} {% if p.longevidad or p.estela or p.uso
+              %}
+              <div class="detalle-item" style="grid-column: 1 / -1">
+                <label>Perfil de uso</label>
+                <div class="perfil-row">
+                  {% if p.longevidad %}
+                  <span class="perfil-badge">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <circle cx="12" cy="12" r="10" />
+                      <polyline points="12 6 12 12 16 14" />
+                    </svg>
+                    {{ p.get_longevidad_display }}
+                  </span>
+                  {% endif %} {% if p.estela %}
+                  <span class="perfil-badge">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path
+                        d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"
+                      />
+                    </svg>
+                    Estela {{ p.get_estela_display }}
+                  </span>
+                  {% endif %} {% if p.uso %}
+                  <span class="perfil-badge">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <circle cx="12" cy="12" r="5" />
+                      <line x1="12" y1="1" x2="12" y2="3" />
+                      <line x1="12" y1="21" x2="12" y2="23" />
+                      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+                      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+                      <line x1="1" y1="12" x2="3" y2="12" />
+                      <line x1="21" y1="12" x2="23" y2="12" />
+                      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+                      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+                    </svg>
+                    {{ p.get_uso_display }}
+                  </span>
+                  {% endif %}
+                </div>
+              </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endwith %} {% endfor %}
+
+      <!-- Totales -->
+      <div class="totales">
+        <div class="card-title" style="margin-bottom: 1rem">
+          Resumen de pago
+        </div>
+        <div class="totales-row">
+          <span>Subtotal</span>
+          <span>${{ pedido.total }}</span>
+        </div>
+        <div class="totales-row">
+          <span>Pagado</span>
+          <span>${{ pedido.total_pagado }}</span>
+        </div>
+        <div class="totales-row total-final">
+          <span>Total</span>
+          <span>${{ pedido.total }}</span>
+        </div>
+        {% if pedido.saldo > 0 %}
+        <div class="totales-row saldo-row">
+          <span>Saldo pendiente</span>
+          <span>${{ pedido.saldo }}</span>
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Footer -->
+      <div class="footer">
+        <div class="divider"></div>
+        <p>Gracias por tu preferencia</p>
+        <p style="margin-top: 0.4rem; font-size: 0.65rem">
+          Este enlace es personal e intransferible · {{ pedido.folio }}
+        </p>
+      </div>
+    </div>
+
+    <script>
+      function toggleDetalle(header) {
+        const detalle = header.nextElementSibling;
+        const chevron = header.querySelector(".chevron");
+        const isOpen = detalle.classList.contains("open");
+
+        // Cierra todos
+        document
+          .querySelectorAll(".producto-detalle.open")
+          .forEach((d) => d.classList.remove("open"));
+        document
+          .querySelectorAll(".chevron")
+          .forEach((c) => (c.style.transform = ""));
+
+        if (!isOpen) {
+          detalle.classList.add("open");
+          chevron.style.transform = "rotate(180deg)";
+        }
+      }
+    </script>
+  </body>
+</html>

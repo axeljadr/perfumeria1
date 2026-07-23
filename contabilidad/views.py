@@ -115,7 +115,7 @@ def compra_create(request):
             # Calcular costo total
             compra.costo_total = compra.cantidad_comprada * compra.precio_unitario
             compra.save()
-            messages.success(request, f'✅ Compra creada exitosamente. ID: #{compra.id}')
+            messages.success(request, f' Compra creada exitosamente. ID: #{compra.id}')
             return redirect('contabilidad:compra_detail', pk=compra.pk)
     else:
         form = CompraForm()
@@ -155,7 +155,7 @@ def compra_procesar(request, pk):
     compra = get_object_or_404(Compra, pk=pk)
     
     if compra.estado == 'completada':
-        messages.warning(request, '⚠️ Esta compra ya fue procesada')
+        messages.warning(request, ' Esta compra ya fue procesada')
         return redirect('contabilidad:compra_detail', pk=pk)
     
     if request.method == 'POST':
@@ -163,10 +163,10 @@ def compra_procesar(request, pk):
         if form.is_valid():
             try:
                 compra.procesar_compra()
-                messages.success(request, f'✅ Compra #{compra.id} procesada exitosamente')
+                messages.success(request, f' Compra #{compra.id} procesada exitosamente')
                 return redirect('contabilidad:compra_detail', pk=compra.pk)
             except Exception as e:
-                messages.error(request, f'❌ Error al procesar: {str(e)}')
+                messages.error(request, f' Error al procesar: {str(e)}')
     else:
         form = CompraProcesarForm()
     
@@ -184,12 +184,12 @@ def compra_delete(request, pk):
     compra = get_object_or_404(Compra, pk=pk)
     
     if compra.estado == 'completada':
-        messages.error(request, '❌ No se puede eliminar una compra completada')
+        messages.error(request, ' No se puede eliminar una compra completada')
         return redirect('contabilidad:compra_detail', pk=pk)
     
     if request.method == 'POST':
         compra.delete()
-        messages.success(request, '✅ Compra eliminada exitosamente')
+        messages.success(request, ' Compra eliminada exitosamente')
         return redirect('contabilidad:compra_list')
     
     return render(request, 'confirmar_eliminar.html', {'compra': compra})
@@ -230,7 +230,7 @@ def presentacion_update(request, pk):
         form = PresentacionForm(request.POST, instance=presentacion)
         if form.is_valid():
             form.save()
-            messages.success(request, '✅ Presentación actualizada exitosamente')
+            messages.success(request, ' Presentación actualizada exitosamente')
             return redirect('contabilidad:presentacion_list')
     else:
         form = PresentacionForm(instance=presentacion)
@@ -269,7 +269,7 @@ def presentacion_batch_create(request):
                 if created:
                     creadas += 1
             
-            messages.success(request, f'✅ {creadas} presentaciones creadas exitosamente')
+            messages.success(request, f' {creadas} presentaciones creadas exitosamente')
             return redirect('contabilidad:presentacion_list')
     else:
         form = PresentacionBatchForm()
@@ -331,7 +331,7 @@ def movimiento_create(request):
         form = MovimientoForm(request.POST)
         if form.is_valid():
             movimiento = form.save()
-            messages.success(request, f'✅ Movimiento creado: {movimiento}')
+            messages.success(request, f' Movimiento creado: {movimiento}')
             return redirect('contabilidad:movimiento_list')
     else:
         form = MovimientoForm()
@@ -345,14 +345,14 @@ def movimiento_update(request, pk):
     movimiento = get_object_or_404(Movimiento, pk=pk)
     
     if movimiento.estado == 'confirmado':
-        messages.warning(request, '⚠️ No se puede editar un movimiento confirmado')
+        messages.warning(request, ' No se puede editar un movimiento confirmado')
         return redirect('contabilidad:movimiento_list')
     
     if request.method == 'POST':
         form = MovimientoForm(request.POST, instance=movimiento)
         if form.is_valid():
             form.save()
-            messages.success(request, '✅ Movimiento actualizado')
+            messages.success(request, ' Movimiento actualizado')
             return redirect('contabilidad:movimiento_list')
     else:
         form = MovimientoForm(instance=movimiento)
@@ -370,12 +370,12 @@ def movimiento_delete(request, pk):
     movimiento = get_object_or_404(Movimiento, pk=pk)
     
     if movimiento.estado == 'confirmado':
-        messages.error(request, '❌ No se puede eliminar un movimiento confirmado')
+        messages.error(request, ' No se puede eliminar un movimiento confirmado')
         return redirect('contabilidad:movimiento_list')
     
     if request.method == 'POST':
         movimiento.delete()
-        messages.success(request, '✅ Movimiento eliminado')
+        messages.success(request, ' Movimiento eliminado')
         return redirect('contabilidad:movimiento_list')
     
     return render(request, 'contabilidad/movimiento_confirm_delete.html', {'movimiento': movimiento})
@@ -394,7 +394,7 @@ def configuracion_edit(request):
         form = ConfiguracionDecantForm(request.POST, instance=config)
         if form.is_valid():
             form.save()
-            messages.success(request, '✅ Configuración actualizada exitosamente')
+            messages.success(request, ' Configuración actualizada exitosamente')
             return redirect('contabilidad:dashboard')
     else:
         form = ConfiguracionDecantForm(instance=config)

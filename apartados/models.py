@@ -1,7 +1,13 @@
+
+from django.core.files import File
 from django.db import models
 from django.db.models import Sum
+from django.urls import reverse
 from catalogo.models import Presentacion
-
+import io
+import uuid
+import qrcode
+from django.core.files.base import ContentFile
 
 class PedidoApartado(models.Model):
 
@@ -13,6 +19,18 @@ class PedidoApartado(models.Model):
     ]
 
     folio = models.CharField(max_length=20, unique=True, editable=False)
+    token_publico = models.UUIDField(
+        default=uuid.uuid4,
+        unique=True,
+        editable=False,
+        verbose_name='Token público',
+    )
+    codigo_qr = models.ImageField(
+        upload_to='codigos_qr/',
+        blank=True,
+        null=True,
+        verbose_name='Código QR',
+    )
     cliente_nombre = models.CharField(max_length=150, verbose_name='Nombre del cliente')
     cliente_telefono = models.CharField(max_length=20, blank=True, verbose_name='Teléfono')
     cliente_ref = models.CharField(max_length=100, blank=True, verbose_name='Referencia / Red social')
@@ -29,12 +47,53 @@ class PedidoApartado(models.Model):
         verbose_name_plural = 'Pedidos'
         ordering = ['-fecha_creacion']
 
+    def url_publica(self):
+        ruta = reverse('apartados:pedido_publico', kwargs={'token': self.token_publico})
+        return f'https://arabesenreynosa.onrender.com{ruta}'
+
+    def generar_codigo_qr(self):
+        """
+        Genera un archivo PNG con el código QR que dirige a la página
+        pública e impredecible de este pedido.
+        """
+
+        # Por seguridad, cada pedido debe tener un token antes de crear su QR.
+        if not self.token_publico:
+            self.token_publico = uuid.uuid4()
+
+        # Crear el QR en memoria.
+        imagen_qr = qrcode.make(self.url_publica())
+
+        buffer = io.BytesIO()
+        imagen_qr.save(buffer, format='PNG')
+        buffer.seek(0)
+
+        # Si se está regenerando, elimina el archivo anterior.
+        if self.codigo_qr:
+            self.codigo_qr.delete(save=False)
+
+        nombre_archivo = f'pedido-{self.folio}-{self.token_publico}.png'
+
+        # ContentFile convierte los bytes del buffer en un archivo válido
+        # para Cloudinary o cualquier otro storage configurado.
+        self.codigo_qr.save(
+            nombre_archivo,
+            ContentFile(buffer.getvalue()),
+            save=False,
+        )
+
+        buffer.close()
+
     def save(self, *args, **kwargs):
-        # Generar folio automático: APT-0001, APT-0002...
+        update_fields = kwargs.get('update_fields')
+
         if not self.folio:
             ultimo = PedidoApartado.objects.order_by('id').last()
             siguiente = (ultimo.id + 1) if ultimo else 1
             self.folio = f'APT-{siguiente:04d}'
+
+        if not self.token_publico:
+            self.token_publico = uuid.uuid4()
 
         super().save(*args, **kwargs)
 
