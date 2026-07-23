@@ -1,8 +1,12 @@
 {% load apartados_extra %}
 
 {% block title %}Pedido {{ pedido.folio }}{% endblock %}
-
-{% block extra_css %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  {% block extra_css %}
 <style>
   :root {
     --bg-base:       #1A1A2E;
@@ -108,12 +112,6 @@
     color: var(--text-muted);
     margin-top: .2rem;
   }
-  #imgModal {
-  display: none;
-}
-#imgModal.active {
-  display: flex; /* o block */
-}
 
   /* ── BADGE ESTADO ── */
   .badge {
@@ -530,8 +528,9 @@
   }
 </style>
 {% endblock %}
-
-{% block content %}
+</head>
+<body>
+  {% block content %}
 <div class="pub-wrap">
 
   <!-- Botón volver al catálogo -->
@@ -765,3 +764,5 @@
   }
 </script>
 {% endblock %}
+</body>
+</html>
