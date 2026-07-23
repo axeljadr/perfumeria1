@@ -1,628 +1,494 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Pedido {{ pedido.folio }}</title>
-  <style>
-    /* ── Reset & Base ── */
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+{% extends 'base.html' %}
+{% load static %}
+{% load apartados_extras %}
 
-    :root {
-      --cream:    #faf8f5;
-      --white:    #ffffff;
-      --ink:      #1a1a1a;
-      --muted:    #6b6560;
-      --border:   #e8e3dc;
-      --accent:   #b8956a;
-      --accent-l: #f0e8dc;
-      --radius:   12px;
-      --shadow:   0 2px 24px rgba(0,0,0,.07);
-    }
+{% block title %}Pedido {{ pedido.folio }}{% endblock %}
 
-    html { font-size: 16px; }
+{% block extra_css %}
+<style>
+  :root {
+    --bg-base:       #0d0d0f;
+    --bg-card:       #141417;
+    --bg-card-alt:   #1a1a1f;
+    --border:        #2a2a32;
+    --border-hover:  #3d3d4d;
+    --text-primary:  #f0f0f5;
+    --text-secondary:#9090a8;
+    --text-muted:    #5a5a72;
+    --accent:        #c9a96e;
+    --accent-dim:    rgba(201,169,110,.12);
+    --accent-hover:  #dfc08a;
+    --green:         #4ade80;
+    --green-dim:     rgba(74,222,128,.12);
+    --yellow:        #fbbf24;
+    --yellow-dim:    rgba(251,191,36,.12);
+    --red:           #f87171;
+    --red-dim:       rgba(248,113,113,.12);
+    --radius:        14px;
+    --radius-sm:     8px;
+    --shadow:        0 4px 32px rgba(0,0,0,.5);
+  }
 
-    body {
-      background: var(--cream);
-      color: var(--ink);
-      font-family: 'Georgia', 'Times New Roman', serif;
-      min-height: 100vh;
-      padding: 2rem 1rem 4rem;
-    }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    /* ── Layout ── */
-    .container {
-      max-width: 720px;
-      margin: 0 auto;
-    }
+  body {
+    background: var(--bg-base);
+    color: var(--text-primary);
+    font-family: 'Georgia', serif;
+    min-height: 100vh;
+  }
 
-    /* ── Header ── */
-    .header {
-      text-align: center;
-      padding: 3rem 2rem 2.5rem;
-      background: var(--white);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      margin-bottom: 1.5rem;
-      border-top: 3px solid var(--accent);
-    }
+  /* ── LAYOUT ── */
+  .pub-wrap {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 2.5rem 1.25rem 4rem;
+  }
 
-    .brand-mark {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: .75rem;
-      margin-bottom: 1.5rem;
-    }
+  /* ── BACK BUTTON ── */
+  .btn-back {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    font-family: 'Helvetica Neue', sans-serif;
+    font-size: .75rem;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    text-decoration: none;
+    padding: .45rem .9rem;
+    border: 1px solid var(--border);
+    border-radius: 99px;
+    background: var(--bg-card);
+    transition: color .2s, border-color .2s, background .2s;
+    margin-bottom: 2rem;
+  }
+  .btn-back:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+    background: var(--accent-dim);
+  }
+  .btn-back svg { width: 14px; height: 14px; }
 
-    .brand-mark svg {
-      width: 28px;
-      height: 28px;
-      color: var(--accent);
-    }
+  /* ── HEADER ── */
+  .pub-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .pub-brand {
+    font-size: .65rem;
+    letter-spacing: .3em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: .4rem;
+  }
+  .pub-folio {
+    font-size: .7rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1;
+  }
+  .pub-cliente {
+    font-size: .85rem;
+    color: var(--text-secondary);
+    margin-top: .35rem;
+    font-family: 'Helvetica Neue', sans-serif;
+  }
 
-    .brand-name {
-      font-size: .75rem;
-      letter-spacing: .25em;
-      text-transform: uppercase;
-      color: var(--muted);
-      font-family: 'Helvetica Neue', Arial, sans-serif;
-    }
+  /* ── BADGE ESTADO ── */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    font-family: 'Helvetica Neue', sans-serif;
+    font-size: .7rem;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    padding: .35rem .85rem;
+    border-radius: 99px;
+    font-weight: 600;
+  }
+  .badge-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%,100% { opacity: 1; }
+    50%      { opacity: .4; }
+  }
+  .badge.abierto   { background: var(--yellow-dim); color: var(--yellow); }
+  .badge.abierto .badge-dot { background: var(--yellow); }
+  .badge.liquidado { background: var(--green-dim);  color: var(--green); }
+  .badge.liquidado .badge-dot { background: var(--green); }
+  .badge.entregado { background: var(--accent-dim); color: var(--accent); }
+  .badge.entregado .badge-dot { background: var(--accent); animation: none; }
+  .badge.cancelado { background: var(--red-dim);    color: var(--red); }
+  .badge.cancelado .badge-dot { background: var(--red); animation: none; }
 
-    .header h1 {
-      font-size: 1.75rem;
-      font-weight: 400;
-      letter-spacing: .04em;
-      color: var(--ink);
-      margin-bottom: .5rem;
-    }
+  /* ── CARDS ── */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    margin-bottom: 1.25rem;
+    transition: border-color .2s;
+  }
+  .card:hover { border-color: var(--border-hover); }
 
-    .header .folio {
-      font-family: 'Helvetica Neue', Arial, sans-serif;
-      font-size: .8rem;
-      letter-spacing: .18em;
-      text-transform: uppercase;
-      color: var(--muted);
-    }
+  .card-title {
+    font-family: 'Helvetica Neue', sans-serif;
+    font-size: .65rem;
+    letter-spacing: .25em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+  }
+  .card-title svg { width: 14px; height: 14px; }
 
-    /* ── Estado badge ── */
-    .estado-wrap {
-      margin-top: 1.25rem;
-      display: flex;
-      justify-content: center;
-    }
+  /* ── INFO GRID ── */
+  .info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: .75rem;
+  }
+  .info-item label {
+    display: block;
+    font-family: 'Helvetica Neue', sans-serif;
+    font-size: .65rem;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: .2rem;
+  }
+  .info-item span {
+    font-size: .9rem;
+    color: var(--text-primary);
+  }
 
-    .estado {
-      display: inline-flex;
-      align-items: center;
-      gap: .45rem;
-      padding: .35rem 1rem;
-      border-radius: 999px;
-      font-family: 'Helvetica Neue', Arial, sans-serif;
-      font-size: .72rem;
-      letter-spacing: .12em;
-      text-transform: uppercase;
-      font-weight: 600;
-    }
+  /* ── ITEMS ── */
+  .item-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1.1rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .item-row:last-child { border-bottom: none; padding-bottom: 0; }
+  .item-row:first-child { padding-top: 0; }
 
-    .estado-dot {
-      width: 7px; height: 7px;
-      border-radius: 50%;
-    }
+  .item-num {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: var(--accent-dim);
+    color: var(--accent);
+    font-family: 'Helvetica Neue', sans-serif;
+    font-size: .7rem;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    margin-top: .1rem;
+  }
+  .item-body { flex: 1; }
+  .item-nombre {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: .15rem;
+  }
+  .item-marca {
+    font-family: 'Helvetica Neue', sans-serif;
+    font-size: .75rem;
+    color: var(--text-secondary);
+    letter-spacing: .05em;
+    margin-bottom: .5rem;
+  }
+  .item-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .4rem;
+  }
+  .chip {
+    font-family: 'Helvetica Neue', sans-serif;
+    font-size: .65rem;
+    letter-spacing: .08em;
+    padding: .2rem .6rem;
+    border-radius: 99px;
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    background: var(--bg-card-alt);
+  }
+  .item-precio {
+    text-align: right;
+    flex-shrink: 0;
+  }
+  .item-precio .precio-unit {
+    font-size: .75rem;
+    color: var(--text-muted);
+    font-family: 'Helvetica Neue', sans-serif;
+  }
+  .item-precio .precio-total {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--accent);
+  }
 
-    .estado--abierto    { background: #fef3e2; color: #92600a; }
-    .estado--abierto    .estado-dot { background: #f59e0b; }
-    .estado--liquidado  { background: #e8f5e9; color: #2e7d32; }
-    .estado--liquidado  .estado-dot { background: #4caf50; }
-    .estado--entregado  { background: #e3f2fd; color: #1565c0; }
-    .estado--entregado  .estado-dot { background: #2196f3; }
-    .estado--cancelado  { background: #fce4ec; color: #b71c1c; }
-    .estado--cancelado  .estado-dot { background: #e53935; }
+  /* ── PERFUME DETAIL ── */
+  .perfume-detail {
+    background: var(--bg-card-alt);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 1rem;
+    margin-top: .75rem;
+  }
+  .perfume-detail p {
+    font-size: .82rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-bottom: .75rem;
+    font-style: italic;
+  }
+  .detail-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+    margin-bottom: .6rem;
+    align-items: center;
+  }
+  .detail-label {
+    font-family: 'Helvetica Neue', sans-serif;
+    font-size: .62rem;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    min-width: 80px;
+  }
+  .tag {
+    font-family: 'Helvetica Neue', sans-serif;
+    font-size: .68rem;
+    padding: .18rem .55rem;
+    border-radius: 99px;
+    background: var(--accent-dim);
+    color: var(--accent);
+    border: 1px solid rgba(201,169,110,.25);
+  }
 
-    /* ── Info cliente ── */
-    .card {
-      background: var(--white);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      padding: 1.75rem 2rem;
-      margin-bottom: 1.5rem;
-    }
+  /* ── RESUMEN PAGO ── */
+  .pago-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: .55rem 0;
+    border-bottom: 1px solid var(--border);
+    font-family: 'Helvetica Neue', sans-serif;
+    font-size: .85rem;
+  }
+  .pago-row:last-child { border-bottom: none; }
+  .pago-row .label { color: var(--text-secondary); }
+  .pago-row .value { color: var(--text-primary); font-weight: 600; }
+  .pago-row.saldo .label { color: var(--text-primary); font-weight: 700; }
+  .pago-row.saldo .value {
+    font-size: 1.1rem;
+    color: var(--accent);
+  }
+  .pago-row.saldo.pagado .value { color: var(--green); }
 
-    .card-title {
-      font-family: 'Helvetica Neue', Arial, sans-serif;
-      font-size: .68rem;
-      letter-spacing: .22em;
-      text-transform: uppercase;
-      color: var(--accent);
-      margin-bottom: 1.25rem;
-      display: flex;
-      align-items: center;
-      gap: .6rem;
-    }
+  /* ── NOTAS ── */
+  .notas-text {
+    font-size: .85rem;
+    color: var(--text-secondary);
+    line-height: 1.7;
+    font-style: italic;
+  }
 
-    .card-title::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: var(--border);
-    }
+  /* ── FOOTER ── */
+  .pub-footer {
+    text-align: center;
+    margin-top: 2.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+    font-family: 'Helvetica Neue', sans-serif;
+    font-size: .7rem;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .pub-footer strong { color: var(--accent); }
 
-    .info-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: .75rem 1.5rem;
-    }
+  @media (max-width: 520px) {
+    .pub-folio { font-size: 1.5rem; }
+    .item-row { flex-wrap: wrap; }
+    .item-precio { width: 100%; text-align: left; }
+  }
+</style>
+{% endblock %}
 
-    @media (max-width: 480px) {
-      .info-grid { grid-template-columns: 1fr; }
-    }
+{% block content %}
+<div class="pub-wrap">
 
-    .info-item label {
-      display: block;
-      font-family: 'Helvetica Neue', Arial, sans-serif;
-      font-size: .68rem;
-      letter-spacing: .1em;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: .2rem;
-    }
-
-    .info-item span {
-      font-size: .95rem;
-      color: var(--ink);
-    }
-
-    /* ── Productos ── */
-    .producto {
-      background: var(--white);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      margin-bottom: 1.25rem;
-      overflow: hidden;
-    }
-
-    .producto-header {
-      display: grid;
-      grid-template-columns: auto 1fr auto;
-      align-items: center;
-      gap: 1rem;
-      padding: 1.5rem 2rem;
-      cursor: pointer;
-      user-select: none;
-    }
-
-    .producto-num {
-      width: 36px; height: 36px;
-      border-radius: 50%;
-      background: var(--accent-l);
-      color: var(--accent);
-      font-family: 'Helvetica Neue', Arial, sans-serif;
-      font-size: .8rem;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-    }
-
-    .producto-info { min-width: 0; }
-
-    .producto-nombre {
-      font-size: 1.05rem;
-      font-weight: 400;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .producto-sub {
-      font-family: 'Helvetica Neue', Arial, sans-serif;
-      font-size: .75rem;
-      color: var(--muted);
-      margin-top: .2rem;
-    }
-
-    .producto-precio {
-      text-align: right;
-      flex-shrink: 0;
-    }
-
-    .producto-precio .subtotal {
-      font-size: 1.05rem;
-      color: var(--ink);
-    }
-
-    .producto-precio .unitario {
-      font-family: 'Helvetica Neue', Arial, sans-serif;
-      font-size: .72rem;
-      color: var(--muted);
-      margin-top: .15rem;
-    }
-
-    .chevron {
-      transition: transform .3s ease;
-      color: var(--muted);
-      flex-shrink: 0;
-    }
-
-    /* ── Detalle olfativo (acordeón) ── */
-    .producto-detalle {
-      max-height: 0;
-      overflow: hidden;
-      transition: max-height .4s ease;
-    }
-
-    .producto-detalle.open {
-      max-height: 800px;
-    }
-
-    .producto-detalle.open ~ .producto-header .chevron {
-      transform: rotate(180deg);
-    }
-
-    .detalle-inner {
-      border-top: 1px solid var(--border);
-      padding: 1.5rem 2rem;
-      background: var(--cream);
-    }
-
-    .detalle-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1rem 2rem;
-    }
-
-    @media (max-width: 480px) {
-      .detalle-grid { grid-template-columns: 1fr; }
-    }
-
-    .detalle-item label {
-      font-family: 'Helvetica Neue', Arial, sans-serif;
-      font-size: .65rem;
-      letter-spacing: .12em;
-      text-transform: uppercase;
-      color: var(--accent);
-      display: block;
-      margin-bottom: .35rem;
-    }
-
-    .detalle-item p {
-      font-size: .88rem;
-      color: var(--ink);
-      line-height: 1.5;
-    }
-
-    .tags {
-      display: flex;
-      flex-wrap: wrap;
-      gap: .4rem;
-      margin-top: .35rem;
-    }
-
-    .tag {
-      background: var(--accent-l);
-      color: var(--accent);
-      font-family: 'Helvetica Neue', Arial, sans-serif;
-      font-size: .68rem;
-      letter-spacing: .06em;
-      padding: .25rem .65rem;
-      border-radius: 999px;
-    }
-
-    .perfil-row {
-      display: flex;
-      gap: .5rem;
-      flex-wrap: wrap;
-      margin-top: .35rem;
-    }
-
-    .perfil-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: .35rem;
-      background: var(--white);
-      border: 1px solid var(--border);
-      border-radius: 999px;
-      padding: .25rem .75rem;
-      font-family: 'Helvetica Neue', Arial, sans-serif;
-      font-size: .7rem;
-      color: var(--muted);
-    }
-
-    .perfil-badge svg {
-      width: 12px; height: 12px;
-      color: var(--accent);
-    }
-
-    /* ── Descripción ── */
-    .descripcion {
-      grid-column: 1 / -1;
-      font-size: .88rem;
-      color: var(--muted);
-      line-height: 1.7;
-      font-style: italic;
-      border-left: 2px solid var(--accent);
-      padding-left: 1rem;
-      margin-top: .5rem;
-    }
-
-    /* ── Totales ── */
-    .totales {
-      background: var(--white);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      padding: 1.5rem 2rem;
-      margin-bottom: 1.5rem;
-    }
-
-    .totales-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: .5rem 0;
-      font-family: 'Helvetica Neue', Arial, sans-serif;
-      font-size: .88rem;
-      color: var(--muted);
-      border-bottom: 1px solid var(--border);
-    }
-
-    .totales-row:last-child { border-bottom: none; }
-
-    .totales-row.total-final {
-      font-size: 1.1rem;
-      color: var(--ink);
-      font-weight: 700;
-      padding-top: .85rem;
-    }
-
-    .totales-row.saldo-row {
-      color: var(--accent);
-      font-weight: 600;
-    }
-
-    /* ── Footer ── */
-    .footer {
-      text-align: center;
-      padding-top: 1rem;
-    }
-
-    .footer p {
-      font-family: 'Helvetica Neue', Arial, sans-serif;
-      font-size: .72rem;
-      letter-spacing: .08em;
-      color: var(--muted);
-    }
-
-    .divider {
-      width: 40px;
-      height: 1px;
-      background: var(--border);
-      margin: 1rem auto;
-    }
-  </style>
-</head>
-<body>
-<div class="container">
+  <!-- Botón volver al catálogo -->
+  <a href="{% url 'catalogo' %}" class="btn-back">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="15 18 9 12 15 6"/>
+    </svg>
+    Volver al catálogo
+  </a>
 
   <!-- Header -->
-  <div class="header">
-    <div class="brand-mark">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M9 3c0 0 1-1 3-1s3 1 3 1"/>
-        <path d="M12 2v4"/>
-        <path d="M5 8h14l-1.5 10.5A2 2 0 0 1 15.52 20H8.48a2 2 0 0 1-1.98-1.5L5 8z"/>
-        <path d="M8 8c0-2 1.5-4 4-4s4 2 4 4"/>
-      </svg>
-      <span class="brand-name">Tu Perfumería</span>
+  <div class="pub-header">
+    <div>
+      <p class="pub-brand">Árabes en Reynosa</p>
+      <h1 class="pub-folio">{{ pedido.folio }}</h1>
+      <p class="pub-cliente">
+        {{ pedido.cliente_nombre|ocultar_nombre }}
+      </p>
     </div>
-    <h1>Resumen de pedido</h1>
-    <p class="folio">{{ pedido.folio }}</p>
-    <div class="estado-wrap">
-      <span class="estado estado--{{ pedido.estado }}">
-        <span class="estado-dot"></span>
-        {{ pedido.get_estado_display }}
-      </span>
-    </div>
-  </div>
-
-  <!-- Info cliente -->
-  <div class="card">
-    <div class="card-title">Cliente</div>
-    <div class="info-grid">
-      <div class="info-item">
-        <label>Nombre</label>
-        <span>{{ pedido.cliente_nombre }}</span>
-      </div>
-      {% if pedido.cliente_telefono %}
-      <div class="info-item">
-        <label>Teléfono</label>
-        <span>{{ pedido.cliente_telefono }}</span>
-      </div>
-      {% endif %}
-      {% if pedido.cliente_ref %}
-      <div class="info-item">
-        <label>Referencia</label>
-        <span>{{ pedido.cliente_ref }}</span>
-      </div>
-      {% endif %}
-      <div class="info-item">
+    <span class="badge {{ pedido.estado }}">
+      <span class="badge-dot"></span>
+      {{ pedido.get_estado_display }}
+    </span>
+    <div class="info-item">
         <label>Fecha</label>
-        <span>{{ pedido.fecha_creacion|date:"d \d\e F, Y" }}</span>
-      </div>
+        <span>{{ pedido.fecha_creacion|date:"d M Y" }}</span>
     </div>
-    {% if pedido.notas %}
-    <div style="margin-top:1rem; padding-top:1rem; border-top:1px solid var(--border);">
-      <div class="info-item">
-        <label>Notas del pedido</label>
-        <span style="font-style:italic; color:var(--muted);">{{ pedido.notas }}</span>
-      </div>
-    </div>
-    {% endif %}
   </div>
 
-  <!-- Productos -->
-  <div class="card-title" style="padding: 0 .25rem; margin-bottom:1rem;">Productos</div>
-
-  {% for item in pedido.items.all %}
-  {% with p=item.presentacion.perfume pres=item.presentacion %}
-  <div class="producto">
-    <div class="producto-header" onclick="toggleDetalle(this)">
-      <div class="producto-num">{{ forloop.counter }}</div>
-      <div class="producto-info">
-        <div class="producto-nombre">{{ p.marca }} — {{ p.nombre }}</div>
-        <div class="producto-sub">
-          {{ pres.get_tipo_display }} · {{ pres.volumen_ml }} ml
-           ·  x{{ item.cantidad }}
-        </div>
-      </div>
-      <div class="producto-precio">
-        <div class="subtotal">${{ item.subtotal }}</div>
-        <div class="unitario">${{ item.precio_unitario }} c/u</div>
-      </div>
-      <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none"
-           stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <polyline points="6 9 12 15 18 9"/>
+  <div class="card">
+    <p class="card-title">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 3h6l1 4H8L9 3z"/><path d="M8 7c0 0-2 1.5-2 7a6 6 0 0 0 12 0c0-5.5-2-7-2-7"/>
       </svg>
-    </div>
+      Perfumes
+    </p>
 
-    <div class="producto-detalle">
-      <div class="detalle-inner">
-        <div class="detalle-grid">
+    {% for item in pedido.items.all %}
+    {% with p=item.presentacion.perfume pres=item.presentacion %}
+    <div class="item-row">
+      <div class="item-num">{{ forloop.counter }}</div>
 
+      <!-- Imagen del perfume -->
+      <div class="item-img-wrap">
+        {% with img=p.imagenes.first %}
+          {% if img %}
+            <img src="{{ img.imagen.url }}" alt="{{ p.nombre }}" loading="lazy">
+          {% else %}
+            <div class="item-img-placeholder">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 3h6l1 4H8L9 3z"/><path d="M8 7c0 0-2 1.5-2 7a6 6 0 0 0 12 0c0-5.5-2-7-2-7"/>
+              </svg>
+            </div>
+          {% endif %}
+        {% endwith %}
+      </div>
+
+      <div class="item-body">
+        <p class="item-nombre">{{ p.nombre }}</p>
+        <p class="item-marca">{{ p.marca }}</p>
+        <div class="item-meta">
+          <span class="chip">{{ pres.get_tipo_display }}</span>
+          <span class="chip">{{ pres.volumen_ml }} ml</span>
+          {% if p.genero %}<span class="chip">{{ p.get_genero_display }}</span>{% endif %}
+          {% if p.familia_olfativa %}<span class="chip">{{ p.familia_olfativa }}</span>{% endif %}
+        </div>
+
+        <!-- Detalle olfativo -->
+        <div class="perfume-detail">
           {% if p.descripcion %}
-          <p class="descripcion">{{ p.descripcion }}</p>
+          <p>{{ p.descripcion }}</p>
           {% endif %}
 
-          {% if p.familia_olfativa %}
-          <div class="detalle-item">
-            <label>Familia olfativa</label>
-            <p>{{ p.familia_olfativa }}</p>
+          {% if p.notas.exists %}
+          <div class="detail-row">
+            <span class="detail-label">Notas</span>
+            {% for nota in p.notas.all %}
+            <span class="tag">{{ nota.nombre }}</span>
+            {% endfor %}
           </div>
           {% endif %}
 
-          {% if p.genero %}
-          <div class="detalle-item">
-            <label>Género</label>
-            <p>{{ p.get_genero_display }}</p>
+          {% if p.acordes.exists %}
+          <div class="detail-row">
+            <span class="detail-label">Acordes</span>
+            {% for acorde in p.acordes.all %}
+            <span class="tag">{{ acorde.nombre }}</span>
+            {% endfor %}
           </div>
           {% endif %}
 
-          {% with acordes=p.acordes.all %}
-          {% if acordes %}
-          <div class="detalle-item" style="grid-column: 1 / -1;">
-            <label>Acordes principales</label>
-            <div class="tags">
-              {% for acorde in acordes %}
-              <span class="tag">{{ acorde }}</span>
-              {% endfor %}
-            </div>
-          </div>
-          {% endif %}
-          {% endwith %}
-
-          {% with notas=p.notas.all %}
-          {% if notas %}
-          <div class="detalle-item" style="grid-column: 1 / -1;">
-            <label>Notas</label>
-            <div class="tags">
-              {% for nota in notas %}
-              <span class="tag">{{ nota }}</span>
-              {% endfor %}
-            </div>
-          </div>
-          {% endif %}
-          {% endwith %}
-
-          {% if p.longevidad or p.estela or p.uso %}
-          <div class="detalle-item" style="grid-column: 1 / -1;">
-            <label>Perfil de uso</label>
-            <div class="perfil-row">
-              {% if p.longevidad %}
-              <span class="perfil-badge">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
-                </svg>
-                {{ p.get_longevidad_display }}
-              </span>
-              {% endif %}
-              {% if p.estela %}
-              <span class="perfil-badge">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
-                </svg>
-                Estela {{ p.get_estela_display }}
-              </span>
-              {% endif %}
-              {% if p.uso %}
-              <span class="perfil-badge">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/>
-                  <line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
-                  <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/>
-                  <line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
-                  <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
-                </svg>
-                {{ p.get_uso_display }}
-              </span>
-              {% endif %}
-            </div>
+          {% if p.longevidad %}
+          <div class="detail-row">
+            <span class="detail-label">Longevidad</span>
+            <span class="tag">{{ p.get_longevidad_display }}</span>
           </div>
           {% endif %}
 
+          {% if p.estela %}
+          <div class="detail-row">
+            <span class="detail-label">Estela</span>
+            <span class="tag">{{ p.get_estela_display }}</span>
+          </div>
+          {% endif %}
+
+          {% if p.uso %}
+          <div class="detail-row">
+            <span class="detail-label">Uso</span>
+            <span class="tag">{{ p.get_uso_display }}</span>
+          </div>
+          {% endif %}
         </div>
       </div>
-    </div>
-  </div>
-  {% endwith %}
-  {% endfor %}
 
-  <!-- Totales -->
-  <div class="totales">
-    <div class="card-title" style="margin-bottom:1rem;">Resumen de pago</div>
-    <div class="totales-row">
-      <span>Subtotal</span>
-      <span>${{ pedido.total }}</span>
+      <div class="item-precio">
+        <p class="precio-unit">{{ item.cantidad }} × ${{ item.precio_unitario }}</p>
+        <p class="precio-total">${{ item.subtotal }}</p>
+      </div>
     </div>
-    <div class="totales-row">
-      <span>Pagado</span>
-      <span>${{ pedido.total_pagado }}</span>
-    </div>
-    <div class="totales-row total-final">
-      <span>Total</span>
-      <span>${{ pedido.total }}</span>
-    </div>
-    {% if pedido.saldo > 0 %}
-    <div class="totales-row saldo-row">
-      <span>Saldo pendiente</span>
-      <span>${{ pedido.saldo }}</span>
-    </div>
-    {% endif %}
+    {% endwith %}
+    {% endfor %}
   </div>
+
+  <!-- Resumen de pago -->
+  <div class="card">
+    <p class="card-title">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/>
+      </svg>
+      Resumen de pago
+    </p>
+
+    <div class="pago-row">
+      <span class="label">Total del pedido</span>
+      <span class="value">${{ pedido.total }}</span>
+    </div>
+  </div>
+
+  <!-- Notas internas (solo si existen) -->
+  {% if pedido.notas %}
+  <div class="card">
+    <p class="card-title">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+      </svg>
+      Notas
+    </p>
+    <p class="notas-text">{{ pedido.notas }}</p>
+  </div>
+  {% endif %}
 
   <!-- Footer -->
-  <div class="footer">
-    <div class="divider"></div>
-    <p>Gracias por tu preferencia</p>
-    <p style="margin-top:.4rem; font-size:.65rem;">Este enlace es personal e intransferible · {{ pedido.folio }}</p>
+  <div class="pub-footer">
+    <strong>Árabes en Reynosa</strong>  ·  Gracias por tu preferencia
   </div>
 
 </div>
-
-<script>
-  function toggleDetalle(header) {
-    const detalle = header.nextElementSibling;
-    const chevron = header.querySelector('.chevron');
-    const isOpen  = detalle.classList.contains('open');
-
-    // Cierra todos
-    document.querySelectorAll('.producto-detalle.open').forEach(d => d.classList.remove('open'));
-    document.querySelectorAll('.chevron').forEach(c => c.style.transform = '');
-
-    if (!isOpen) {
-      detalle.classList.add('open');
-      chevron.style.transform = 'rotate(180deg)';
-    }
-  }
-</script>
-</body>
-</html>
+{% endblock %}
