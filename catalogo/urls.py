@@ -24,6 +24,7 @@ urlpatterns = [
     path('notas/<int:pk>/eliminar/', views.nota_eliminar, name='nota_eliminar'),
 
     path('perfume/<int:perfume_pk>/presentacion/nueva/', views.presentacion_crear, name='presentacion_crear'),
+    path('perfume/<int:pk>/eliminar/', views.eliminar_perfume, name='eliminar_perfume'),
     path('presentacion/<int:pk>/editar/', views.presentacion_editar, name='presentacion_editar'),
     path('presentacion/<int:pk>/eliminar/', views.presentacion_eliminar, name='presentacion_eliminar'),
 

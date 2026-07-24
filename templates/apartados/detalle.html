@@ -1,5 +1,7 @@
-{% extends 'base.html' %} {% load static %} {% block title %}Pedido {{
-pedido.folio }}{% endblock %} {% block extra_css %}
+{% extends 'base.html' %} 
+{% load static %}
+ {% block title %}Pedido {{ pedido.folio }}{% endblock %} 
+ {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/tablas.css' %}" />
 {% endblock %} {% block content %}
 <div class="cotizacion-container">

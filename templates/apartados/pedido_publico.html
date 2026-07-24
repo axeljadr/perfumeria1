@@ -1,9 +1,8 @@
 {% load apartados_extra %}
-
-{% block title %}Pedido {{ pedido.folio }}{% endblock %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
+   {% block title %}Pedido {{ pedido.folio }}{% endblock %} 
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   {% block extra_css %}

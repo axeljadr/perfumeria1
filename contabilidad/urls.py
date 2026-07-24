@@ -18,6 +18,9 @@ urlpatterns = [
     path('presentaciones/', views.presentacion_list, name='presentacion_list'),
     path('presentaciones/<int:pk>/editar/', views.presentacion_update, name='presentacion_update'),
     path('presentaciones/crear-multiple/', views.presentacion_batch_create, name='presentacion_batch_create'),
+    path('presentaciones/get-by-perfume/', views.presentacion_get_by_perfume, name='presentacion_get_by_perfume'),
+    path('presentaciones/get-by-perfume/', views.presentacion_get_by_perfume, name='presentacion_get_by_perfume'),
+path('presentaciones/calcular-decants/', views.calcular_decants_ajax, name='calcular_decants_ajax'),
     
     # Movimientos contables
     path('movimientos/', views.movimiento_list, name='movimiento_list'),

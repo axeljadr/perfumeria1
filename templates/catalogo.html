@@ -159,9 +159,9 @@
                 <div class="card-presentaciones">
                     {% for p in perfume.presentaciones.all %}
                         {% if p.activo %}
-                        <span class="tag-presentacion {% if not p.disponible %}agotado{% endif %}">
+                        <span class="tag-presentacion">
                             {{ p.volumen_ml }}
-                            {% if not p.disponible %}<small>(Solicitar)</small>{% endif %}
+                            {% if not p.disponible %}(Por pedido){% endif %}
                         </span>
                         {% endif %}
                     {% endfor %}

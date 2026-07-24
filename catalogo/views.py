@@ -119,7 +119,13 @@ def editar_perfume(request, pk):
         'editando': True,
         'perfume': perfume,
     })
-
+@staff_member_required
+def eliminar_perfume(request, pk):
+    perfume = get_object_or_404(Perfume, pk=pk)
+    if request.method == 'POST':
+        perfume.delete()
+        return redirect('catalogo')
+    return redirect('detalle_perfume', pk=pk)
 
 from django.http import JsonResponse
 

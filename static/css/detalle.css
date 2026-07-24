@@ -295,6 +295,20 @@
     color: #8b0000 !important;
 }
 
+.btn-danger {
+    background: #8b0000;
+    color: white;
+    border: none;
+    padding: 0.6rem 1.4rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background 0.2s;
+}
+
+.btn-danger:hover {
+    background: #b00000;
+}
 @media (max-width: 900px) {
     .detalle-container {
         grid-template-columns: 1fr;

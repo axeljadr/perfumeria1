@@ -105,6 +105,9 @@
         <a href="{% url 'editar_perfume' perfume.pk %}" class="btn-primary" style="margin-top:2rem; display:inline-block;">
             Editar perfume
         </a>
+        <button type="button" class="btn-danger" style="margin-top:2rem;" onclick="document.getElementById('modal-eliminar').style.display='flex'">
+            Eliminar perfume
+        </button>
         {% endif %}
     </div>
     {% if request.user.is_staff %}
@@ -123,7 +126,7 @@
                         {% if p.disponible %}
                             ✓ {{ p.stock }} en stock
                         {% else %}
-                            ✗ Sin stock
+                            Para pedir
                         {% endif %}
                         {% if p.apartados_activos > 0 %}
                             · <strong style="color:var(--dorado);">{{ p.apartados_activos }}</strong> apartado{% if p.apartados_activos > 1 %}s{% endif %}
@@ -145,5 +148,25 @@
         </div>
     </div>
     {% endif %}
+    {% if request.user.is_staff %}
+<div id="modal-eliminar" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:1000; align-items:center; justify-content:center;">
+    <div style="background:#1a1a1a; border:1px solid var(--dorado); border-radius:12px; padding:2rem; max-width:400px; width:90%; text-align:center;">
+        <h3 style="color:var(--dorado); margin-bottom:1rem;">¿Eliminar perfume?</h3>
+        <p style="color:#ccc; margin-bottom:1.5rem;">
+            Esta acción eliminará <strong style="color:white;">{{ perfume.marca }} — {{ perfume.nombre }}</strong> permanentemente, incluyendo todas sus presentaciones.
+        </p>
+        <div style="display:flex; gap:1rem; justify-content:center;">
+            <button type="button" class="btn-secondary"
+                onclick="document.getElementById('modal-eliminar').style.display='none'">
+                Cancelar
+            </button>
+            <form method="POST" action="{% url 'eliminar_perfume' perfume.pk %}">
+                {% csrf_token %}
+                <button type="submit" class="btn-danger">Sí, eliminar</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
 </section>
 {% endblock %}

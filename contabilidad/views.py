@@ -4,7 +4,8 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Sum, Q
 from django.utils import timezone
 from django.http import JsonResponse
-from decimal import Decimal
+from decimal import Decimal, ROUND_HALF_UP
+import math
 from datetime import datetime, timedelta
 
 from .models import (
@@ -242,41 +243,247 @@ def presentacion_update(request, pk):
     })
 
 
+from decimal import Decimal, InvalidOperation
+
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
+from django.shortcuts import redirect, render
+
+from .models import Perfume, Presentacion, ConfiguracionDecant
+
+
 @login_required
 def presentacion_batch_create(request):
-    """Crear múltiples presentaciones a la vez"""
+    perfumes = Perfume.objects.filter(activo=True).order_by('marca', 'nombre')
+
+    perfumes_sin_presentaciones = Perfume.objects.filter(
+        activo=True,
+        presentaciones__isnull=True,
+    ).distinct()
+
+    # Esta configuración solo sirve para mostrar valores iniciales en el template.
+    # No se guarda dentro de Presentacion.
+    configuracion_decant = ConfiguracionDecant.get_config()
+
     if request.method == 'POST':
-        form = PresentacionBatchForm(request.POST)
-        if form.is_valid():
-            perfume = form.cleaned_data['perfume']
-            precios = form.cleaned_data['precios']
-            stock_inicial = form.cleaned_data.get('stock_inicial', 0)
-            
-            creadas = 0
-            for ml, precio in precios.items():
-                tipo = 'original' if ml == 100 else 'decant'
-                presentacion, created = Presentacion.objects.get_or_create(
+        perfume_id = request.POST.get('perfume')
+
+        # Campos reales que se guardan en Presentacion.
+        ids = request.POST.getlist('pres_id[]')
+        tipos = request.POST.getlist('tipo[]')
+        volumenes = request.POST.getlist('volumen_ml[]')
+        precios = request.POST.getlist('precio[]')
+        stocks = request.POST.getlist('stock[]')
+        activos = request.POST.getlist('activo[]')
+        eliminados = request.POST.getlist('eliminar[]')
+
+        errores = []
+
+        try:
+            perfume = Perfume.objects.get(pk=perfume_id, activo=True)
+        except (Perfume.DoesNotExist, ValueError, TypeError):
+            perfume = None
+            errores.append('Selecciona un perfume válido.')
+
+        if not errores:
+            # Solo permite eliminar presentaciones que correspondan al perfume seleccionado.
+            if eliminados:
+                Presentacion.objects.filter(
+                    pk__in=eliminados,
                     perfume=perfume,
-                    tipo=tipo,
-                    volumen_ml=str(ml),
-                    defaults={
-                        'precio': precio,
-                        'stock': stock_inicial,
-                        'activo': True,
-                        'precio_automatico': False
-                    }
+                ).delete()
+
+            creadas = 0
+            actualizadas = 0
+
+            filas = zip(
+                ids,
+                tipos,
+                volumenes,
+                precios,
+                stocks,
+                activos,
+            )
+
+            for i, (pres_id, tipo, volumen, precio, stock, activo) in enumerate(filas, start=1):
+                volumen = str(volumen).strip()
+
+                try:
+                    volumen_val = int(volumen)
+
+                    if volumen_val <= 0:
+                        raise ValueError
+                except (ValueError, TypeError):
+                    errores.append(
+                        f'Fila {i}: el volumen "{volumen}" debe ser un número entero mayor que cero.'
+                    )
+                    continue
+
+                try:
+                    precio_val = Decimal(str(precio).strip())
+
+                    if precio_val < 0:
+                        raise ValueError
+                except (InvalidOperation, ValueError, TypeError):
+                    errores.append(f'Fila {i}: el precio de venta no es válido.')
+                    continue
+
+                try:
+                    stock_val = int(stock)
+
+                    if stock_val < 0:
+                        raise ValueError
+                except (ValueError, TypeError):
+                    errores.append(f'Fila {i}: el stock no es válido.')
+                    continue
+
+                activo_val = activo == '1'
+
+                if pres_id:
+                    try:
+                        presentacion = Presentacion.objects.get(
+                            pk=pres_id,
+                            perfume=perfume,
+                        )
+
+                        presentacion.tipo = tipo
+                        presentacion.volumen_ml = volumen_val
+                        presentacion.precio = precio_val
+                        presentacion.stock = stock_val
+                        presentacion.activo = activo_val
+
+                        # No se modifica precio_automatico aquí:
+                        # el usuario puede haber editado manualmente el precio final.
+                        presentacion.save()
+
+                        actualizadas += 1
+
+                    except Presentacion.DoesNotExist:
+                        errores.append(
+                            f'Fila {i}: la presentación seleccionada no pertenece a este perfume.'
+                        )
+
+                else:
+                    # No se guardan costos de bolsa, jeringa, líquido ni porcentaje.
+                    # Solo se guarda el precio final de venta que quedó en la tabla.
+                    _, creada = Presentacion.objects.get_or_create(
+                        perfume=perfume,
+                        tipo=tipo,
+                        volumen_ml=volumen_val,
+                        defaults={
+                            'precio': precio_val,
+                            'stock': stock_val,
+                            'activo': activo_val,
+                            'precio_automatico': False,
+                        },
+                    )
+
+                    if creada:
+                        creadas += 1
+                    else:
+                        errores.append(
+                            f'Fila {i}: ya existe una presentación de {volumen_val} ml '
+                            f'con tipo "{tipo}".'
+                        )
+
+            if not errores:
+                messages.success(
+                    request,
+                    f'✅ {creadas} presentación(es) creada(s) y '
+                    f'{actualizadas} actualizada(s).'
                 )
-                if created:
-                    creadas += 1
-            
-            messages.success(request, f' {creadas} presentaciones creadas exitosamente')
-            return redirect('contabilidad:presentacion_list')
+                return redirect('contabilidad:presentacion_list')
+
     else:
-        form = PresentacionBatchForm()
-    
-    return render(request, 'contabilidad/presentaciones/presentacion_batch.html', {'form': form})
+        errores = []
+
+    return render(
+        request,
+        'contabilidad/presentaciones/presentacion_batch.html',
+        {
+            'perfumes': perfumes,
+            'perfumes_sin_presentaciones': perfumes_sin_presentaciones,
+            'configuracion_decant': configuracion_decant,
+            'errores': errores,
+        },
+    )
 
 
+@login_required
+def presentacion_get_by_perfume(request):
+    perfume_id = request.GET.get('perfume_id')
+
+    if not perfume_id:
+        return JsonResponse(
+            {
+                'error': 'Debes indicar un perfume.',
+                'presentaciones': [],
+            },
+            status=400,
+        )
+
+    try:
+        perfume = Perfume.objects.get(pk=perfume_id, activo=True)
+    except (Perfume.DoesNotExist, ValueError, TypeError):
+        return JsonResponse(
+            {
+                'error': 'Perfume no encontrado.',
+                'presentaciones': [],
+            },
+            status=404,
+        )
+
+    presentaciones = []
+
+    for presentacion in perfume.presentaciones.all().order_by('volumen_ml'):
+        presentaciones.append({
+            'id': presentacion.pk,
+            'tipo': presentacion.tipo,
+            'volumen_ml': presentacion.volumen_ml,
+            'precio': str(presentacion.precio),
+            'stock': presentacion.stock,
+            'activo': presentacion.activo,
+            'precio_automatico': presentacion.precio_automatico,
+        })
+
+    return JsonResponse({
+        'presentaciones': presentaciones,
+    })
+
+from decimal import Decimal, InvalidOperation, ROUND_CEILING
+from django.http import JsonResponse
+
+# Asegúrate de importar el modelo desde donde lo tengas definido:
+# from .models import ConfiguracionDecant
+
+
+@login_required
+def calcular_decants_ajax(request):
+    try:
+        precio_orig = Decimal(request.GET.get('precio', '0'))
+        vol_orig = Decimal(request.GET.get('volumen', '100'))
+    except:
+        return JsonResponse({'error': 'Datos inválidos'}, status=400)
+
+    config = ConfiguracionDecant.get_config()
+    precio_por_ml = precio_orig / vol_orig
+
+    decants = []
+    for ml in [3, 5, 10]:
+        costo_liquido = (precio_por_ml * Decimal(ml)).quantize(Decimal('0.01'))
+        decants.append({
+            'ml': ml,
+            'costo_liquido': str(costo_liquido),
+            'bolsa': str(config.bolsa_costo),
+            'jeringa': str(config.jeringa_costo),
+        })
+
+    return JsonResponse({
+        'decants': decants,
+        'ganancia_default': str(config.porcentaje_ganancia),
+        'redondeo': config.redondeo_terminacion
+    })
 # ============================================================
 # VISTAS DE MOVIMIENTOS CONTABLES
 # ============================================================

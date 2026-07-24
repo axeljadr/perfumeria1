@@ -1,122 +1,543 @@
 {% extends 'contabilidad/base_contabilidad.html' %}
-
-{% block page_title %}Crear Múltiples Presentaciones{% endblock %}
+{% block page_title %}Gestionar Presentaciones{% endblock %}
 
 {% block content %}
+<style>
+  :root {
+    --col-decant: #e8f4fd;
+    --col-ganancia: #fff9c4;
+    --col-suministros: #fff9c4;
+    --col-final: #ffcccc;
+    --col-final-border: #e53935;
+    --header-dark: #1a1a2e;
+  }
+
+  .tabla-excel {
+    font-size: .78rem;
+    border-collapse: collapse;
+    min-width: 900px;
+  }
+
+  .tabla-excel th, .tabla-excel td {
+    border: 1px solid #ccc;
+    padding: 4px 6px;
+    white-space: nowrap;
+    vertical-align: middle;
+  }
+
+  /* Grupos de cabecera */
+  .th-decant   { background: #b3e5fc; text-align: center; font-weight: 700; }
+  .th-ganancia { background: #fff176; text-align: center; font-weight: 700; }
+  .th-sumin    { background: #fff176; text-align: center; font-weight: 700; }
+  .th-dark     { background: var(--header-dark); color: #fff; text-align: center; }
+
+  /* Celdas de configuración (fila amarilla) */
+  .config-row td { background: #fffde7; }
+  .config-row input {
+    width: 70px;
+    border: 1px solid #f9a825;
+    border-radius: 4px;
+    padding: 2px 4px;
+    font-size: .78rem;
+    text-align: center;
+    background: #fff9c4;
+    font-weight: 700;
+  }
+
+  /* Celdas de datos */
+  .td-decant   { background: var(--col-decant); text-align: right; }
+  .td-ganancia { background: var(--col-ganancia); text-align: center; }
+  .td-sumin    { background: var(--col-suministros); text-align: center; }
+
+  /* Precio final editable — rojo */
+  .input-final {
+    width: 80px;
+    border: 2px solid var(--col-final-border);
+    border-radius: 4px;
+    padding: 2px 4px;
+    font-size: .82rem;
+    font-weight: 700;
+    text-align: right;
+    background: var(--col-final);
+    color: #b71c1c;
+  }
+
+  /* Inputs de datos normales */
+  .input-sm-tabla {
+    width: 70px;
+    border: 1px solid #bbb;
+    border-radius: 4px;
+    padding: 2px 4px;
+    font-size: .78rem;
+    text-align: right;
+  }
+
+  .td-precio-calc {
+    text-align: right;
+    font-size: .78rem;
+    color: #555;
+  }
+
+  .fila-eliminada { opacity: .4; pointer-events: none; text-decoration: line-through; }
+
+  .badge-nueva { font-size: .62rem; }
+
+  #loading-indicator { font-size: .82rem; }
+
+  .btn-config-recalc {
+    font-size: .75rem;
+  }
+
+  /* Panel de configuración superior */
+  .config-panel {
+    background: #fffde7;
+    border: 1px solid #f9a825;
+    border-radius: 8px;
+    padding: 12px 18px;
+  }
+  .config-panel label {
+    font-size: .75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    color: #555;
+    margin-bottom: 2px;
+  }
+  .config-panel input {
+    border: 1px solid #f9a825;
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: .85rem;
+    font-weight: 700;
+    background: #fff9c4;
+    width: 90px;
+    text-align: center;
+  }
+</style>
+
 <div class="row justify-content-center">
-    <div class="col-lg-8">
-        <div class="card">
-            <div class="card-header">
-                <h5><i class="fas fa-plus-circle"></i> Crear Presentaciones Masivas</h5>
-                <small class="text-muted">Crea varias presentaciones para un perfume de una sola vez</small>
-            </div>
-            <div class="card-body">
-                <div class="alert alert-info">
-                    <h6><i class="fas fa-info-circle"></i> ¿Cómo funciona?</h6>
-                    <p class="mb-0 small">
-                        Ingresa los precios para cada volumen en el formato <code>ml:precio</code> (uno por línea).
-                        Ejemplo para un perfume de $650:
-                    </p>
-                    <pre class="bg-light p-2 mt-2 rounded small">
-3:45
-5:60
-10:105
-100:650</pre>
-                </div>
-                
-                <form method="POST">
-                    {% csrf_token %}
-                    
-                    <div class="mb-3">
-                        <label for="{{ form.perfume.id_for_label }}" class="form-label">
-                            <i class="fas fa-fragrance"></i> Perfume
-                        </label>
-                        {{ form.perfume }}
-                        {% if form.perfume.errors %}
-                            <div class="text-danger small">{{ form.perfume.errors }}</div>
-                        {% endif %}
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="{{ form.precios.id_for_label }}" class="form-label">
-                            <i class="fas fa-dollar-sign"></i> Precios
-                        </label>
-                        {{ form.precios }}
-                        <small class="text-muted d-block">{{ form.precios.help_text }}</small>
-                        {% if form.precios.errors %}
-                            <div class="text-danger small">{{ form.precios.errors }}</div>
-                        {% endif %}
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="{{ form.stock_inicial.id_for_label }}" class="form-label">
-                            <i class="fas fa-cubes"></i> Stock Inicial (opcional)
-                        </label>
-                        {{ form.stock_inicial }}
-                        <small class="text-muted">Si no se especifica, se crea con stock 0</small>
-                        {% if form.stock_inicial.errors %}
-                            <div class="text-danger small">{{ form.stock_inicial.errors }}</div>
-                        {% endif %}
-                    </div>
-                    
-                    <hr>
-                    
-                    <div class="d-flex justify-content-end gap-2">
-                        <a href="{% url 'contabilidad:presentacion_list' %}" class="btn btn-secondary">
-                            <i class="fas fa-times"></i> Cancelar
-                        </a>
-                        <button type="submit" class="btn btn-success">
-                            <i class="fas fa-plus-circle"></i> Crear Presentaciones
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-        
-        <!-- Perfumes sin presentaciones -->
-        <div class="card mt-4">
-            <div class="card-header">
-                <h6><i class="fas fa-exclamation-triangle"></i> Perfumes sin presentaciones</h6>
-            </div>
-            <div class="card-body p-0">
-                <div class="list-group list-group-flush">
-                    {% for perfume in perfumes_sin_presentaciones %}
-                    <div class="list-group-item d-flex justify-content-between align-items-center">
-                        <div>
-                            <strong>{{ perfume.nombre }}</strong>
-                            <br>
-                            <small class="text-muted">{{ perfume.marca }}</small>
-                        </div>
-                        <span class="badge bg-danger">Sin presentaciones</span>
-                    </div>
-                    {% empty %}
-                    <div class="list-group-item text-center text-muted">
-                        <i class="fas fa-check-circle text-success"></i>
-                        <br>Todos los perfumes tienen presentaciones
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
+<div class="col-12">
+
+  <div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+      <div>
+        <h5 class="mb-0"><i class="fas fa-table"></i> Gestionar Presentaciones</h5>
+        <small class="text-muted">Selecciona un perfume, edita la configuración y genera los decants</small>
+      </div>
+      <div id="loading-indicator" class="text-muted d-none">
+        <i class="fas fa-spinner fa-spin"></i> Cargando…
+      </div>
     </div>
+
+    <div class="card-body">
+      <form method="POST" id="form-presentaciones">
+        {% csrf_token %}
+
+        <!-- ── SELECTOR DE PERFUME ── -->
+        <div class="row mb-3 align-items-end">
+          <div class="col-md-7">
+            <label class="form-label fw-semibold">Perfume</label>
+            <select name="perfume" id="sel-perfume" class="form-select" required>
+              <option value="">— Selecciona un perfume —</option>
+              {% for p in perfumes %}
+                <option value="{{ p.id }}">{{ p.marca }} — {{ p.nombre }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+
+        <!-- ── PANEL DE CONFIGURACIÓN (estilo Excel amarillo) ── -->
+        <div class="config-panel mb-3 d-flex flex-wrap gap-4 align-items-end">
+          <div>
+            <label>Ganancia %</label>
+            <input type="number" id="cfg-ganancia" value="25" min="0" step="0.5">
+          </div>
+          <div>
+            <label>Costo Bolsa ($)</label>
+            <input type="number" id="cfg-bolsa" value="2" min="0" step="0.5">
+          </div>
+          <div>
+            <label>Costo Jeringa ($)</label>
+            <input type="number" id="cfg-jeringa" value="12" min="0" step="0.5">
+          </div>
+          <div>
+            <label>Redondeo</label>
+            <select id="cfg-redondeo" style="border:1px solid #f9a825;border-radius:4px;padding:4px 8px;font-size:.85rem;background:#fff9c4;font-weight:700;">
+              <option value="5">Múltiplo de 5</option>
+              <option value="10">Múltiplo de 10</option>
+            </select>
+          </div>
+          <div class="ms-auto">
+            <button type="button" id="btn-generar-decants" class="btn btn-primary btn-sm" disabled>
+              <i class="fas fa-calculator"></i> Generar precios de decants
+            </button>
+          </div>
+        </div>
+
+        {% if errores %}
+        <div class="alert alert-danger">
+          <ul class="mb-0">{% for e in errores %}<li>{{ e }}</li>{% endfor %}</ul>
+        </div>
+        {% endif %}
+
+        <!-- ── TABLA ESTILO EXCEL ── -->
+        <div class="table-responsive">
+          <table class="tabla-excel" id="tabla">
+            <thead>
+              <tr>
+                <th class="th-dark">#</th>
+                <th class="th-dark">Tipo</th>
+                <th class="th-dark">ML</th>
+                <th class="th-decant">Precio calculado ($)</th>
+                <th class="th-dark">Precio venta ($)</th>
+                <th class="th-dark">Stock</th>
+                <th class="th-dark">Activo</th>
+                <th class="th-dark"></th>
+              </tr>
+            </thead>
+            <tbody id="tabla-body">
+              <tr id="fila-vacia">
+                <td colspan="13" class="text-center text-muted py-4">
+                  <i class="fas fa-arrow-up"></i> Selecciona un perfume para cargar sus presentaciones
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mt-2 mb-3">
+          <button type="button" id="btn-add-row" class="btn btn-outline-secondary btn-sm" disabled>
+            <i class="fas fa-plus"></i> Agregar fila
+          </button>
+          <small class="text-muted" id="contador"></small>
+        </div>
+
+        <hr>
+        <div class="d-flex justify-content-end gap-2">
+          <a href="{% url 'contabilidad:presentacion_list' %}" class="btn btn-secondary">
+            <i class="fas fa-times"></i> Cancelar
+          </a>
+          <button type="submit" class="btn btn-success" id="btn-guardar" disabled>
+            <i class="fas fa-save"></i> Guardar cambios
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+  {% if perfumes_sin_presentaciones %}
+  <div class="card mt-4">
+    <div class="card-header">
+      <h6 class="mb-0"><i class="fas fa-exclamation-triangle text-warning"></i> Perfumes sin presentaciones</h6>
+    </div>
+    <div class="card-body p-0">
+      <div class="list-group list-group-flush">
+        {% for p in perfumes_sin_presentaciones %}
+        <div class="list-group-item d-flex justify-content-between align-items-center">
+          <div>
+            <strong>{{ p.nombre }}</strong>
+            <br><small class="text-muted">{{ p.marca }}</small>
+          </div>
+          <span class="badge bg-danger">Sin presentaciones</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+</div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-    $(document).ready(function() {
-        // Ejemplo de cómo auto-completar el campo de precios
-        // Puedes agregar un botón para cargar un ejemplo
-        $('#id_perfume').on('change', function() {
-            // Si quieres, puedes hacer una llamada AJAX para obtener los precios recomendados
-            // basados en la configuración de decants
-        });
-        
-        // Validar formato en tiempo real
-        $('#id_precios').on('input', function() {
-            var valor = $(this).val();
-            // Aquí puedes agregar validación básica
-        });
+const URL_CARGAR   = "{% url 'contabilidad:presentacion_get_by_perfume' %}";
+const URL_CALCULAR = "{% url 'contabilidad:calcular_decants_ajax' %}";
+
+const TIPOS = [
+  ['decant',   'Decant'],
+  ['original', 'Tamaño Original'],
+  ['set',      'Set'],
+  ['miniatura','Miniatura'],
+  ['otro',     'Otro'],
+];
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+
+function getCfg() {
+  return {
+    ganancia : parseFloat(document.getElementById('cfg-ganancia').value)  || 25,
+    bolsa    : parseFloat(document.getElementById('cfg-bolsa').value)     || 2,
+    jeringa  : parseFloat(document.getElementById('cfg-jeringa').value)   || 12,
+    redondeo : document.getElementById('cfg-redondeo').value,
+  };
+}
+
+function redondear(precio, terminacion) {
+  const m = terminacion === '5' ? 5 : 10;
+  return Math.ceil(precio / m) * m;
+}
+
+function calcularPrecioDecant(precioMl, ml, cfg) {
+  const costoLiq = precioMl * ml;
+  const base     = costoLiq + cfg.bolsa + cfg.jeringa;
+  const sugerido = base * (1 + cfg.ganancia / 100);
+  return {
+    calculado : sugerido.toFixed(2),
+    final     : redondear(sugerido, cfg.redondeo),
+  };
+}
+
+function selectTipo(selected) {
+  return `<select name="tipo[]" class="form-select form-select-sm tipo-sel" style="min-width:110px" required>
+    ${TIPOS.map(([v,l]) => `<option value="${v}" ${v===selected?'selected':''}>${l}</option>`).join('')}
+  </select>`;
+}
+
+// ── Crear fila ────────────────────────────────────────────────────────────────
+// Para presentaciones que NO son decant, las columnas de decant quedan vacías.
+// Para la presentación original, el precio de venta es el precio del perfume.
+
+function crearFila(data = {}) {
+  const id     = data.id        || '';
+  const tipo   = data.tipo      || 'decant';
+  const vol    = data.volumen_ml|| '';
+  const precio = data.precio    || '';
+  const stock  = data.stock     ?? 0;
+  const activo = data.activo    !== undefined ? data.activo : true;
+  const esNueva = !data.id;
+
+  // Cada fila tiene su volumen; por eso existe una sola columna universal de cálculo.
+  const precioCalculado = tipo === 'decant'
+    ? '<td class="td-decant"><span class="precio-calculado">—</span></td>'
+    : '<td class="text-center text-muted" style="font-size:.72rem">—</td>';
+
+  return `<tr data-id="${id}" data-tipo="${tipo}">
+    <td>
+      <input type="hidden" name="pres_id[]" value="${id}">
+      ${esNueva ? '<span class="badge bg-success badge-nueva">Nueva</span>' : `<small class="text-muted">#${id}</small>`}
+    </td>
+    <td>${selectTipo(tipo)}</td>
+    <td><input type="text" name="volumen_ml[]" class="input-sm-tabla vol-input" value="${vol}" placeholder="ml" required style="width:55px"></td>
+    ${precioCalculado}
+    <td><input type="number" name="precio[]" class="input-final precio-venta-input" value="${precio}" step="0.01" min="0" required></td>
+    <td><input type="number" name="stock[]" class="input-sm-tabla" value="${stock}" min="0" required style="width:60px"></td>
+    <td class="text-center">
+      <select name="activo[]" class="form-select form-select-sm" style="width:70px">
+        <option value="1" ${activo?'selected':''}>✅</option>
+        <option value="0" ${!activo?'selected':''}>❌</option>
+      </select>
+    </td>
+    <td class="text-center">
+      ${id
+        ? `<button type="button" class="btn btn-outline-danger btn-sm btn-delete-row" data-id="${id}"><i class="fas fa-trash"></i></button>`
+        : `<button type="button" class="btn btn-outline-secondary btn-sm btn-remove-row"><i class="fas fa-times"></i></button>`
+      }
+    </td>
+  </tr>`;
+}
+
+// ── Recalcular TODAS las filas decant visibles ────────────────────────────────
+function recalcularDecants() {
+  // Buscar la fila original para obtener precio/ml
+  let precioMl = null;
+
+  document.querySelectorAll('#tabla-body tr:not([data-eliminada])').forEach(tr => {
+    const tipo = tr.querySelector('.tipo-sel')?.value;
+    if (tipo === 'original') {
+      const precio = parseFloat(tr.querySelector('.precio-venta-input')?.value) || 0;
+      const vol    = parseFloat(tr.querySelector('.vol-input')?.value) || 0;
+      if (precio > 0 && vol > 0) precioMl = precio / vol;
+    }
+  });
+
+  if (!precioMl) return;
+
+  const cfg = getCfg();
+
+  document.querySelectorAll('#tabla-body tr:not([data-eliminada])').forEach(tr => {
+    const tipo = tr.querySelector('.tipo-sel')?.value;
+    if (tipo !== 'decant') return;
+
+    const vol = parseFloat(tr.querySelector('.vol-input')?.value) || 0;
+    if (!vol) return;
+
+    const r = calcularPrecioDecant(precioMl, vol, cfg);
+
+    // Actualizar columna "Precio calculado" (span universal)
+    const spanCalc = tr.querySelector('.precio-calculado');
+    if (spanCalc) spanCalc.textContent = '$' + r.calculado;
+
+    // Actualizar precio de venta con el valor redondeado
+    const precioInput = tr.querySelector('.precio-venta-input');
+    if (precioInput) precioInput.value = r.final;
+  });
+}
+
+function actualizarContador() {
+  const total = document.querySelectorAll('#tabla-body tr:not([data-eliminada])').length;
+  document.getElementById('contador').textContent = `${total} presentación(es)`;
+}
+
+// ── Cargar perfume ────────────────────────────────────────────────────────────
+document.getElementById('sel-perfume').addEventListener('change', function () {
+  const perfumeId = this.value;
+  const tbody     = document.getElementById('tabla-body');
+  const btnAdd    = document.getElementById('btn-add-row');
+  const btnGuardar= document.getElementById('btn-guardar');
+  const btnGen    = document.getElementById('btn-generar-decants');
+
+  if (!perfumeId) {
+    tbody.innerHTML = `<tr id="fila-vacia"><td colspan="13" class="text-center text-muted py-4">
+      <i class="fas fa-arrow-up"></i> Selecciona un perfume
+    </td></tr>`;
+    [btnAdd, btnGuardar, btnGen].forEach(b => b.disabled = true);
+    return;
+  }
+
+  document.getElementById('loading-indicator').classList.remove('d-none');
+  [btnAdd, btnGuardar, btnGen].forEach(b => b.disabled = true);
+
+  fetch(`${URL_CARGAR}?perfume_id=${perfumeId}`)
+    .then(r => r.json())
+    .then(data => {
+      document.getElementById('loading-indicator').classList.add('d-none');
+      tbody.innerHTML = data.presentaciones.length
+        ? data.presentaciones.map(p => crearFila(p)).join('')
+        : `<tr><td colspan="13" class="text-center text-muted py-3">
+             <i class="fas fa-info-circle"></i> Sin presentaciones. Agrega la original primero.
+           </td></tr>`;
+      [btnAdd, btnGuardar, btnGen].forEach(b => b.disabled = false);
+      actualizarContador();
+      recalcularDecants();
+    })
+    .catch(() => {
+      document.getElementById('loading-indicator').classList.add('d-none');
+      tbody.innerHTML = `<tr><td colspan="13" class="text-center text-danger py-3">Error al cargar.</td></tr>`;
     });
+});
+
+// ── Generar decants ───────────────────────────────────────────────────────────
+document.getElementById('btn-generar-decants').addEventListener('click', function () {
+  const filas = document.querySelectorAll('#tabla-body tr:not([data-eliminada])');
+  let originalFila = null;
+  filas.forEach(tr => {
+    if (tr.querySelector('.tipo-sel')?.value === 'original') originalFila = tr;
+  });
+
+  if (!originalFila) {
+    alert('No hay una presentación "Original" en la tabla. Crea una primero.');
+    return;
+  }
+
+  const precioOrg = parseFloat(originalFila.querySelector('.precio-venta-input')?.value) || 0;
+  const volOrg    = parseFloat(originalFila.querySelector('.vol-input')?.value) || 0;
+
+  if (precioOrg <= 0 || volOrg <= 0) {
+    alert('La presentación original debe tener precio y volumen válidos.');
+    return;
+  }
+
+  const cfg    = getCfg();
+  const precioMl = precioOrg / volOrg;
+
+  // Cargar valores de configuración desde el backend para inicializar el panel
+  fetch(`${URL_CALCULAR}?precio=${precioOrg}&volumen=${volOrg}`)
+    .then(r => r.json())
+    .then(data => {
+      // La configuración visible pertenece a esta edición y nunca se reemplaza
+      // por valores por defecto devueltos por el backend.
+      const cfgActual = getCfg();
+
+      [3, 5, 10].forEach(ml => {
+        const r = calcularPrecioDecant(precioMl, ml, cfgActual);
+
+        // Buscar si ya existe fila decant con ese ml
+        let existente = null;
+        document.querySelectorAll('#tabla-body tr:not([data-eliminada])').forEach(tr => {
+          const tipo = tr.querySelector('.tipo-sel')?.value;
+          const vol  = parseFloat(tr.querySelector('.vol-input')?.value);
+          if (tipo === 'decant' && vol === ml) existente = tr;
+        });
+
+        if (existente) {
+          // Actualizar fila existente
+          const spanCalc = existente.querySelector('.precio-calculado');
+          if (spanCalc) spanCalc.textContent = '$' + r.calculado;
+          const pv = existente.querySelector('.precio-venta-input');
+          if (pv) pv.value = r.final;
+        } else {
+          // Crear fila nueva
+          const nuevaFila = crearFila({
+            tipo: 'decant',
+            volumen_ml: ml,
+            precio: r.final,
+            stock: 0,
+            activo: true,
+          });
+          document.getElementById('tabla-body').insertAdjacentHTML('beforeend', nuevaFila);
+
+          // Poner el calculado en el span de la fila recién creada
+          const ultimaTr = document.querySelector('#tabla-body tr:last-child');
+          const spanCalc = ultimaTr.querySelector('.precio-calculado');
+          if (spanCalc) spanCalc.textContent = '$' + r.calculado;
+        }
+      });
+
+      actualizarContador();
+    });
+});
+
+// ── Recalcular al cambiar configuración ──────────────────────────────────────
+['cfg-ganancia','cfg-bolsa','cfg-jeringa','cfg-redondeo'].forEach(id => {
+  document.getElementById(id).addEventListener('input', recalcularDecants);
+  document.getElementById(id).addEventListener('change', recalcularDecants);
+});
+
+// ── Recalcular al cambiar precio/vol de la original ──────────────────────────
+// Solo recalcula si el input que cambió pertenece a la fila "original" o es un vol-input de decant.
+// NO recalcula si el usuario edita manualmente el precio de venta de un decant.
+document.getElementById('tabla-body').addEventListener('input', function(e) {
+  const tr   = e.target.closest('tr');
+  const tipo = tr?.querySelector('.tipo-sel')?.value;
+
+  if (e.target.classList.contains('vol-input')) {
+    recalcularDecants();
+    return;
+  }
+  if (e.target.classList.contains('precio-venta-input') && tipo === 'original') {
+    recalcularDecants();
+  }
+});
+
+// ── Agregar fila manual ───────────────────────────────────────────────────────
+document.getElementById('btn-add-row').addEventListener('click', function () {
+  document.getElementById('tabla-body').insertAdjacentHTML('beforeend', crearFila());
+  actualizarContador();
+});
+
+// ── Eliminar / quitar ─────────────────────────────────────────────────────────
+document.getElementById('tabla-body').addEventListener('click', function (e) {
+  const btnRemove = e.target.closest('.btn-remove-row');
+  if (btnRemove) {
+    btnRemove.closest('tr').remove();
+    actualizarContador();
+    return;
+  }
+  const btnDelete = e.target.closest('.btn-delete-row');
+  if (btnDelete) {
+    const fila = btnDelete.closest('tr');
+    if (!confirm('¿Eliminar esta presentación? Se borrará al guardar.')) return;
+    fila.insertAdjacentHTML('beforeend', `<input type="hidden" name="eliminar[]" value="${btnDelete.dataset.id}">`);
+    fila.setAttribute('data-eliminada', '1');
+    fila.classList.add('fila-eliminada');
+    fila.querySelectorAll('input, select').forEach(el => {
+      if (el.name !== 'eliminar[]') el.disabled = true;
+    });
+    actualizarContador();
+  }
+});
 </script>
 {% endblock %}

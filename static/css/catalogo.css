@@ -566,12 +566,6 @@
     color: var(--color-gray-700);
 }
 
-.tag-presentacion.agotado {
-    color: var(--color-gray-700);
-    border-color: #eee;
-    text-decoration: line-through;
-}
-
 .card-precio {
     display: block;
     font-size: 1.2rem;
