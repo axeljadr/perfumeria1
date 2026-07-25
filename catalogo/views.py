@@ -6,7 +6,8 @@ from .forms import PerfumeForm, FamiliaOlfativaForm, AcordeForm, NotaForm, Prese
 from django.shortcuts import render
 from django.utils import timezone
 from datetime import timedelta
-
+from django.utils.http import url_has_allowed_host_and_scheme
+from urllib.parse import urlencode
 
 def catalogo(request):
     # Obtener todos los perfumes activos
@@ -110,6 +111,15 @@ def editar_perfume(request, pk):
         form = PerfumeForm(request.POST, request.FILES, instance=perfume)
         if form.is_valid():
             form.save()
+            next_url = request.GET.get('next')
+
+            if next_url and url_has_allowed_host_and_scheme(
+                url=next_url,
+                allowed_hosts={request.get_host()},
+                require_https=request.is_secure(),
+            ):
+                return redirect(f'{next_url}?{urlencode({"perfume_id": perfume.pk})}')
+
             return redirect('detalle_perfume', pk=perfume.pk)
     else:
         form = PerfumeForm(instance=perfume)

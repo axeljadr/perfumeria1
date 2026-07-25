@@ -2,6 +2,7 @@ from django.db import models
 from django.utils import timezone
 from decimal import Decimal
 import math
+from django.db import models, transaction
 from catalogo.models import Perfume, Presentacion
 
 
@@ -160,76 +161,35 @@ class Compra(models.Model):
         return precios
     
     def procesar_compra(self):
-        """
-        Procesa la compra completa:
-        1. Actualiza stock de presentaciones
-        2. Calcula precios de decants automáticos
-        3. Crea movimiento contable
-        """
         if self.estado == 'completada':
-            raise ValueError("Esta compra ya fue procesada")
-        
-        # 1. Calcular precios de decants
-        precios_decants = self.calcular_precios_decants()
-        
-        # 2. Crear/actualizar presentación 100ml (original)
-        original, _ = Presentacion.objects.get_or_create(
-            perfume=self.perfume,
-            tipo='original',
-            volumen_ml='100',
-            defaults={
-                'precio': self.perfume.precio_venta_completo if hasattr(self.perfume, 'precio_venta_completo') else 0,
-                'stock': 0,
-                'activo': True,
-                'precio_automatico': False
-            }
-        )
-        original.stock += self.cantidad_comprada
-        original.save()
-        
-        # 3. Crear/actualizar presentaciones decants
-        for ml, precio in precios_decants.items():
-            decant, _ = Presentacion.objects.get_or_create(
-                perfume=self.perfume,
-                tipo='decant',
-                volumen_ml=str(ml),
+            raise ValueError('Esta compra ya fue procesada.')
+        if self.estado == 'cancelada':
+            raise ValueError('No se puede procesar una compra cancelada.')
+
+        with transaction.atomic():
+            concepto, _ = Concepto.objects.get_or_create(
+                nombre='Compra de perfume',
                 defaults={
-                    'precio': precio,
-                    'stock': 0,
-                    'activo': True,
-                    'precio_automatico': True
+                    'tipo': 'egreso',
+                    'descripcion': 'Adquisición de perfumes para inventario',
                 }
             )
-            # Calcular cuántos decants se pueden hacer (100ml / ml)
-            cantidad_decants = int(100 / ml) * self.cantidad_comprada
-            decant.stock += cantidad_decants
-            decant.precio = precio
-            decant.save()
-        
-        # 4. Crear movimiento contable
-        concepto, _ = Concepto.objects.get_or_create(
-            nombre='Compra de perfume',
-            defaults={
-                'tipo': 'egreso',
-            }
-        )
-        
-        movimiento = Movimiento.objects.create(
-            concepto=concepto,
-            monto=self.costo_total,
-            cantidad=self.cantidad_comprada,
-            descripcion=f"Compra #{self.id} - {self.perfume.nombre}",
-            fecha=self.fecha_compra,
-            estado='confirmado',
-        )
-        
-        self.movimiento_contable = movimiento
-        
-        # 5. Marcar compra como completada
-        self.estado = 'completada'
-        self.save()
-        
-        return True
+
+            movimiento = Movimiento.objects.create(
+                concepto=concepto,
+                monto=self.costo_total,
+                descripcion=(
+                    f'Compra #{self.id} - '
+                    f'{self.perfume.marca} - {self.perfume.nombre}'
+                ),
+                fecha=self.fecha_compra,
+            )
+
+            self.movimiento_contable = movimiento
+            self.estado = 'completada'
+            self.save(update_fields=['movimiento_contable', 'estado'])
+
+        return movimiento
 
 
 # ============================================================
@@ -331,3 +291,135 @@ class HistorialPrecios(models.Model):
     
     def __str__(self):
         return f"{self.perfume.nombre} - {self.presentacion.volumen_ml}ml: ${self.precio_anterior} → ${self.precio_nuevo}"
+    
+
+class CompraDecant(models.Model):
+    """Compra de decants para prueba/venta sin frasco completo"""
+    perfume = models.ForeignKey(
+        Perfume,
+        on_delete=models.PROTECT,
+        related_name='compras_decant'
+    )
+    proveedor = models.CharField(max_length=200, blank=True, null=True)
+    volumen_ml = models.PositiveIntegerField(help_text="Volumen del decant en ml")
+    cantidad = models.PositiveIntegerField(default=1)
+    precio_unitario = models.DecimalField(max_digits=10, decimal_places=2)
+    costo_total = models.DecimalField(max_digits=12, decimal_places=2, editable=False)
+    fecha_compra = models.DateField(default=timezone.now)
+    notas = models.TextField(blank=True, null=True)
+    movimiento_contable = models.ForeignKey(
+        'Movimiento',
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name='compras_decant_asociadas'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "compra de decant"
+        verbose_name_plural = "compras de decants"
+        ordering = ['-fecha_compra']
+
+    def __str__(self):
+        return f"Decant #{self.id} - {self.perfume.nombre} {self.volumen_ml}ml x{self.cantidad}"
+
+    def save(self, *args, **kwargs):
+        self.costo_total = self.cantidad * self.precio_unitario
+        super().save(*args, **kwargs)
+
+    def procesar(self):
+        """Agrega stock a la presentación decant correspondiente y crea movimiento"""
+        presentacion, _ = Presentacion.objects.get_or_create(
+            perfume=self.perfume,
+            tipo='decant',
+            volumen_ml=str(self.volumen_ml),
+            defaults={'precio': 0, 'stock': 0, 'activo': True, 'precio_automatico': False}
+        )
+        presentacion.stock += self.cantidad
+        presentacion.save()
+
+        concepto, _ = Concepto.objects.get_or_create(
+            nombre='Compra de decant',
+            defaults={'tipo': 'egreso'}
+        )
+        movimiento = Movimiento.objects.create(
+            concepto=concepto,
+            monto=self.costo_total,
+            cantidad=self.cantidad,
+            descripcion=f"Decant #{self.id} - {self.perfume.nombre} {self.volumen_ml}ml",
+            fecha=self.fecha_compra,
+            estado='confirmado',
+        )
+        self.movimiento_contable = movimiento
+        self.save()
+        return True
+
+
+class CompraInsumo(models.Model):
+    """Compra de insumos: bolsas, frascos, jeringas, impresora, etc."""
+    CATEGORIA_CHOICES = [
+        ('empaque', 'Empaque (bolsas, cajas)'),
+        ('decant', 'Material decant (frascos, jeringas)'),
+        ('impresion', 'Impresión (impresora, cinta, etiquetas)'),
+        ('otro', 'Otro'),
+    ]
+
+    nombre = models.CharField(max_length=200)
+    categoria = models.CharField(max_length=20, choices=CATEGORIA_CHOICES, default='otro')
+    proveedor = models.CharField(max_length=200, blank=True, null=True)
+    cantidad = models.DecimalField(max_digits=12, decimal_places=2, default=1)
+    precio_unitario = models.DecimalField(max_digits=10, decimal_places=2)
+    costo_total = models.DecimalField(max_digits=12, decimal_places=2, editable=False)
+    fecha_compra = models.DateField(default=timezone.now)
+    notas = models.TextField(blank=True, null=True)
+
+    # Opcional: vincular al inventario si quieres llevar stock
+    inventario = models.ForeignKey(
+        Inventario,
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name='compras_insumo',
+        help_text="Vincula al inventario para actualizar stock automáticamente"
+    )
+    movimiento_contable = models.ForeignKey(
+        'Movimiento',
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name='compras_insumo_asociadas'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "compra de insumo"
+        verbose_name_plural = "compras de insumos"
+        ordering = ['-fecha_compra']
+
+    def __str__(self):
+        return f"{self.nombre} x{self.cantidad} — ${self.costo_total}"
+
+    def save(self, *args, **kwargs):
+        self.costo_total = self.cantidad * self.precio_unitario
+        # Actualizar inventario si está vinculado
+        if self.inventario and not self.pk:  # solo en creación
+            self.inventario.cantidad += self.cantidad
+            self.inventario.save()
+        super().save(*args, **kwargs)
+
+    def registrar_movimiento(self):
+        concepto, _ = Concepto.objects.get_or_create(
+            nombre='Compra de insumo',
+            defaults={'tipo': 'egreso'}
+        )
+        movimiento = Movimiento.objects.create(
+            concepto=concepto,
+            monto=self.costo_total,
+            cantidad=self.cantidad,
+            descripcion=f"Insumo: {self.nombre}",
+            fecha=self.fecha_compra,
+            estado='confirmado',
+        )
+        self.movimiento_contable = movimiento
+        self.save()
+        return movimiento
+
+

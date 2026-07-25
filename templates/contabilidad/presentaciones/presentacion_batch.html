@@ -137,11 +137,19 @@
         <div class="row mb-3 align-items-end">
           <div class="col-md-7">
             <label class="form-label fw-semibold">Perfume</label>
-            <select name="perfume" id="sel-perfume" class="form-select" required>
-              <option value="">— Selecciona un perfume —</option>
-              {% for p in perfumes %}
-                <option value="{{ p.id }}">{{ p.marca }} — {{ p.nombre }}</option>
-              {% endfor %}
+            <select name="perfume" id="id_perfume" class="form-select" required>
+                <option value="">Selecciona un perfume...</option>
+
+                {% for perfume in perfumes %}
+                    <option
+                        value="{{ perfume.pk }}"
+                        {% if perfume.pk|stringformat:"s" == perfume_preseleccionado_id %}
+                            selected
+                        {% endif %}
+                    >
+                        {{ perfume.marca }} — {{ perfume.nombre }}
+                    </option>
+                {% endfor %}
             </select>
           </div>
         </div>
@@ -382,7 +390,7 @@ function actualizarContador() {
 }
 
 // ── Cargar perfume ────────────────────────────────────────────────────────────
-document.getElementById('sel-perfume').addEventListener('change', function () {
+document.getElementById('id_perfume').addEventListener('change', function () {
   const perfumeId = this.value;
   const tbody     = document.getElementById('tabla-body');
   const btnAdd    = document.getElementById('btn-add-row');
@@ -539,5 +547,34 @@ document.getElementById('tabla-body').addEventListener('click', function (e) {
     actualizarContador();
   }
 });
+// ── Precargar presentaciones al llegar desde el detalle de compra ────────────
+(function () {
+  const params = new URLSearchParams(window.location.search);
+  const perfumeId = params.get('perfume_id');
+  const selectPerfume = document.getElementById('id_perfume');
+
+  // Si no se recibió perfume_id o no existe el select, no hacer nada.
+  if (!perfumeId || !selectPerfume) {
+    return;
+  }
+
+  // Verificar que el perfume exista entre las opciones disponibles.
+  const opcion = selectPerfume.querySelector(
+    `option[value="${perfumeId}"]`
+  );
+
+  if (!opcion) {
+    console.warn('El perfume indicado no existe en el selector:', perfumeId);
+    return;
+  }
+
+  // Aunque Django ya puede marcarlo como selected, lo fijamos aquí por seguridad.
+  selectPerfume.value = perfumeId;
+
+  // Este evento activa tu fetch hacia presentacion_get_by_perfume.
+  selectPerfume.dispatchEvent(
+    new Event('change', { bubbles: true })
+  );
+})();
 </script>
 {% endblock %}

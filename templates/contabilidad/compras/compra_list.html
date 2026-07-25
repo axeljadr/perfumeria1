@@ -153,9 +153,6 @@
                             <i class="fas fa-eye"></i>
                         </a>
                         {% if compra.estado == 'en_proceso' %}
-                            <a href="{% url 'contabilidad:compra_procesar' compra.pk %}" class="btn btn-sm btn-success" title="Procesar">
-                                <i class="fas fa-check"></i>
-                            </a>
                             <a href="{% url 'contabilidad:compra_delete' compra.pk %}" class="btn btn-sm btn-danger" title="Eliminar">
                                 <i class="fas fa-trash"></i>
                             </a>

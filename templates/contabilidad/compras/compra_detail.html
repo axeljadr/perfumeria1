@@ -6,22 +6,36 @@
 <div class="row">
     <div class="col-lg-8">
         <!-- Información Principal -->
-        <div class="card mb-4">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5><i class="fas fa-shopping-cart"></i> Compra #{{ compra.id }}</h5>
-                <div>
-                    {% if compra.estado == 'en_proceso' %}
-                        <span class="badge bg-warning text-dark">En Proceso</span>
-                        <a href="{% url 'contabilidad:compra_procesar' compra.pk %}" class="btn btn-sm btn-success ms-2">
-                            <i class="fas fa-check"></i> Procesar
-                        </a>
-                    {% elif compra.estado == 'completada' %}
-                        <span class="badge bg-success">Completada</span>
-                    {% else %}
-                        <span class="badge bg-danger">Cancelada</span>
-                    {% endif %}
-                </div>
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5><i class="fas fa-shopping-cart"></i> Compra #{{ compra.id }}</h5>
+            <div class="d-flex align-items-center gap-2">
+                {% if compra.estado == 'en_proceso' %}
+                    <span class="badge bg-warning text-dark">En proceso</span>
+
+                    <button
+                        type="button"
+                        class="btn btn-sm btn-success"
+                        data-bs-toggle="modal"
+                        data-bs-target="#modalProcesarCompra"
+                    >
+                        <i class="fas fa-check"></i> Procesar
+                    </button>
+
+                    <a
+                        href="{% url 'contabilidad:compra_update' compra.pk %}"
+                        class="btn btn-sm btn-primary"
+                    >
+                        <i class="fas fa-edit"></i> Editar
+                    </a>
+
+                {% elif compra.estado == 'completada' %}
+                    <span class="badge bg-success">Completada</span>
+
+                {% else %}
+                    <span class="badge bg-danger">Cancelada</span>
+                {% endif %}
             </div>
+        </div>
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-6">
@@ -143,20 +157,105 @@
             </div>
             <div class="card-body">
                 <div class="d-grid gap-2">
+                    <a
+                        href="{% url 'contabilidad:presentacion_batch_create' %}?perfume_id={{ compra.perfume.pk }}"
+                        class="btn btn-outline-primary"
+                    >
+                        <i class="fas fa-boxes"></i> Configurar presentaciones
+                    </a>
+
                     {% if compra.estado == 'en_proceso' %}
-                        <a href="{% url 'contabilidad:compra_procesar' compra.pk %}" class="btn btn-success">
-                            <i class="fas fa-check"></i> Procesar Compra
+                        <button
+                            type="button"
+                            class="btn btn-success"
+                            data-bs-toggle="modal"
+                            data-bs-target="#modalProcesarCompra"
+                        >
+                            <i class="fas fa-check"></i> Procesar compra
+                        </button>
+
+                        <a
+                            href="{% url 'contabilidad:compra_update' compra.pk %}"
+                            class="btn btn-primary"
+                        >
+                            <i class="fas fa-edit"></i> Editar compra
                         </a>
-                        <a href="{% url 'contabilidad:compra_delete' compra.pk %}" class="btn btn-danger">
-                            <i class="fas fa-trash"></i> Eliminar Compra
+
+                        <a
+                            href="{% url 'contabilidad:compra_delete' compra.pk %}"
+                            class="btn btn-danger"
+                        >
+                            <i class="fas fa-trash"></i> Eliminar compra
                         </a>
                     {% endif %}
+
                     <a href="{% url 'contabilidad:compra_list' %}" class="btn btn-secondary">
-                        <i class="fas fa-arrow-left"></i> Volver a Compras
+                        <i class="fas fa-arrow-left"></i> Volver a compras
                     </a>
                 </div>
             </div>
         </div>
     </div>
 </div>
+{% if compra.estado == 'en_proceso' %}
+<div
+    class="modal fade"
+    id="modalProcesarCompra"
+    tabindex="-1"
+    aria-labelledby="modalProcesarCompraTitulo"
+    aria-hidden="true"
+>
+    <div class="modal-dialog">
+        <form method="POST" action="{% url 'contabilidad:compra_detail' compra.pk %}">
+            {% csrf_token %}
+
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title" id="modalProcesarCompraTitulo">
+                        <i class="fas fa-check-circle"></i>
+                        Confirmar procesamiento
+                    </h5>
+
+                    <button
+                        type="button"
+                        class="btn-close btn-close-white"
+                        data-bs-dismiss="modal"
+                        aria-label="Cerrar"
+                    ></button>
+                </div>
+
+                <div class="modal-body">
+                    <p>
+                        ¿Deseas procesar la compra
+                        <strong>#{{ compra.id }}</strong>?
+                    </p>
+
+                    <div class="alert alert-info mb-0">
+                        <strong>Se realizará lo siguiente:</strong>
+                        <ul class="mb-0 mt-2">
+                            <li>Se creará un egreso contable de <strong>${{ compra.costo_total|floatformat:2 }}</strong>.</li>
+                            <li>La compra quedará marcada como completada.</li>
+                            <li>No se crearán ni modificarán presentaciones automáticamente.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button
+                        type="button"
+                        class="btn btn-secondary"
+                        data-bs-dismiss="modal"
+                    >
+                        Cancelar
+                    </button>
+
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-check"></i> Sí, procesar compra
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endif %}
 {% endblock %}

@@ -10,10 +10,12 @@ from datetime import datetime, timedelta
 
 from .models import (
     Compra, Presentacion, Movimiento, Concepto, 
-    ConfiguracionDecant, Perfume
+    ConfiguracionDecant, Perfume, CompraDecant, CompraInsumo
 )
+from catalogo.models import Perfume
 from .forms import (
-    CompraForm, CompraProcesarForm, PresentacionForm, 
+
+    CompraForm, CompraDecantForm, CompraInsumoForm, CompraProcesarForm, PresentacionForm, 
     PresentacionBatchForm, MovimientoForm, MovimientoFiltroForm,
     ConfiguracionDecantForm, ReporteForm
 )
@@ -73,6 +75,10 @@ def dashboard(request):
 # ============================================================
 # VISTAS DE COMPRAS
 # ============================================================
+@login_required
+def adquisicion_nueva(request):
+    return render(request, 'contabilidad/compras/adquisicion_tipo.html')
+
 
 @login_required
 def compra_list(request):
@@ -108,75 +114,161 @@ def compra_list(request):
 
 @login_required
 def compra_create(request):
-    """Crear una nueva compra"""
+    perfume_id = request.GET.get('perfume_id')
+
+    initial = {}
+    if perfume_id and Perfume.objects.filter(pk=perfume_id, activo=True).exists():
+        initial['perfume'] = perfume_id
+
     if request.method == 'POST':
         form = CompraForm(request.POST)
+
         if form.is_valid():
             compra = form.save(commit=False)
-            # Calcular costo total
-            compra.costo_total = compra.cantidad_comprada * compra.precio_unitario
+            compra.costo_total = (
+                compra.cantidad_comprada * compra.precio_unitario
+            )
             compra.save()
-            messages.success(request, f' Compra creada exitosamente. ID: #{compra.id}')
+
+            messages.success(
+                request,
+                f'Compra de perfume #{compra.id} creada correctamente.'
+            )
             return redirect('contabilidad:compra_detail', pk=compra.pk)
     else:
-        form = CompraForm()
-    
-    return render(request, 'contabilidad/compras/compra_form.html', {'form': form, 'action': 'crear'})
+        form = CompraForm(initial=initial)
+
+    return render(request, 'contabilidad/compras/compra_form.html', {
+        'form': form,
+        'action': 'crear',
+        'perfumes': Perfume.objects.filter(activo=True).order_by('marca', 'nombre'),
+    })
+
+@login_required
+def compra_decant_create(request):
+    perfume_id = request.GET.get('perfume_id')
+
+    initial = {}
+    if perfume_id and Perfume.objects.filter(pk=perfume_id, activo=True).exists():
+        initial['perfume'] = perfume_id
+
+    if request.method == 'POST':
+        form = CompraDecantForm(request.POST)
+
+        if form.is_valid():
+            compra = form.save(commit=False)
+            compra.costo_total = compra.cantidad * compra.precio_unitario
+            compra.save()
+
+            messages.success(
+                request,
+                f'Compra de decants #{compra.id} creada correctamente.'
+            )
+            return redirect('contabilidad:compra_decant_detail', pk=compra.pk)
+    else:
+        form = CompraDecantForm(initial=initial)
+
+    return render(request, 'contabilidad/compras/compra_decant_form.html', {
+        'form': form,
+        'perfumes': Perfume.objects.filter(activo=True).order_by('marca', 'nombre'),
+    })
+
+@login_required
+def compra_insumo_create(request):
+    if request.method == 'POST':
+        form = CompraInsumoForm(request.POST)
+
+        if form.is_valid():
+            compra = form.save(commit=False)
+            compra.costo_total = compra.cantidad * compra.precio_unitario
+            compra.save()
+
+            messages.success(
+                request,
+                f'Compra de insumo #{compra.id} creada correctamente.'
+            )
+            return redirect('contabilidad:compra_insumo_detail', pk=compra.pk)
+    else:
+        form = CompraInsumoForm()
+
+    return render(request, 'contabilidad/compras/compra_insumo_form.html', {
+        'form': form,
+    })
+
+@login_required
+def compra_update(request, pk):
+    compra = get_object_or_404(Compra, pk=pk)
+
+    if compra.estado == 'completada':
+        messages.error(request, 'No se puede modificar una compra ya completada.')
+        return redirect('contabilidad:compra_detail', pk=pk)
+
+    if request.method == 'POST':
+        form = CompraForm(request.POST, instance=compra)
+        if form.is_valid():
+            compra = form.save(commit=False)
+            compra.costo_total = compra.cantidad_comprada * compra.precio_unitario
+            compra.save()
+            messages.success(request, f'Compra #{compra.id} actualizada correctamente.')
+            return redirect('contabilidad:compra_detail', pk=compra.pk)
+    else:
+        form = CompraForm(instance=compra)
+
+    return render(request, 'contabilidad/compras/compra_form.html', {
+        'form': form,
+        'action': 'editar',
+        'compra': compra,
+        'perfumes': Perfume.objects.filter(activo=True).order_by('marca', 'nombre'),
+    })
 
 
 @login_required
 def compra_detail(request, pk):
-    """Detalle de una compra"""
-    compra = get_object_or_404(Compra, pk=pk)
-    
-    # Precios calculados (para mostrar)
-    precios_decants = None
-    if compra.estado != 'completada':
+    """Detalle y confirmación de una compra."""
+
+    compra = get_object_or_404(
+        Compra.objects.select_related('perfume', 'movimiento_contable'),
+        pk=pk
+    )
+
+    if request.method == 'POST':
+        if compra.estado == 'completada':
+            messages.warning(request, 'Esta compra ya fue procesada.')
+            return redirect('contabilidad:compra_detail', pk=compra.pk)
+
+        if compra.estado == 'cancelada':
+            messages.error(request, 'No se puede procesar una compra cancelada.')
+            return redirect('contabilidad:compra_detail', pk=compra.pk)
+
         try:
-            precios_decants = compra.calcular_precios_decants()
-        except:
-            precios_decants = {}
-    
-    # Presentaciones del perfume
-    presentaciones = compra.perfume.presentaciones.filter(activo=True)
-    
-    context = {
+            compra.procesar_compra()
+
+            messages.success(
+                request,
+                f'Compra #{compra.id} procesada correctamente. '
+                f'Se creó el movimiento contable asociado.'
+            )
+        except ValueError as error:
+            messages.error(request, str(error))
+        except Exception as e:
+            import traceback
+            traceback.print_exc()   # <-- imprime el error completo en la consola del servidor
+            messages.error(
+                request,
+                f'Error al procesar: {str(e)}'  # muestra el error real en pantalla
+            )
+
+        return redirect('contabilidad:compra_detail', pk=compra.pk)
+
+    presentaciones = compra.perfume.presentaciones.filter(
+        activo=True
+    ).order_by('tipo', 'volumen_ml')
+
+    return render(request, 'contabilidad/compras/compra_detail.html', {
         'compra': compra,
-        'precios_decants': precios_decants,
         'presentaciones': presentaciones,
         'puede_procesar': compra.estado == 'en_proceso',
-    }
-    
-    return render(request, 'contabilidad/compras/compra_detail.html', context)
-
-
-@login_required
-def compra_procesar(request, pk):
-    """Procesar una compra (confirmar y actualizar inventario)"""
-    compra = get_object_or_404(Compra, pk=pk)
-    
-    if compra.estado == 'completada':
-        messages.warning(request, ' Esta compra ya fue procesada')
-        return redirect('contabilidad:compra_detail', pk=pk)
-    
-    if request.method == 'POST':
-        form = CompraProcesarForm(request.POST)
-        if form.is_valid():
-            try:
-                compra.procesar_compra()
-                messages.success(request, f' Compra #{compra.id} procesada exitosamente')
-                return redirect('contabilidad:compra_detail', pk=compra.pk)
-            except Exception as e:
-                messages.error(request, f' Error al procesar: {str(e)}')
-    else:
-        form = CompraProcesarForm()
-    
-    context = {
-        'compra': compra,
-        'form': form,
-    }
-    
-    return render(request, 'contabilidad/compras/compra_procesar.html', context)
+    })
 
 
 @login_required
@@ -256,6 +348,7 @@ from .models import Perfume, Presentacion, ConfiguracionDecant
 @login_required
 def presentacion_batch_create(request):
     perfumes = Perfume.objects.filter(activo=True).order_by('marca', 'nombre')
+    perfume_preseleccionado_id = request.GET.get('perfume_id')
 
     perfumes_sin_presentaciones = Perfume.objects.filter(
         activo=True,
@@ -405,6 +498,7 @@ def presentacion_batch_create(request):
             'perfumes': perfumes,
             'perfumes_sin_presentaciones': perfumes_sin_presentaciones,
             'configuracion_decant': configuracion_decant,
+            'perfume_preseleccionado_id': perfume_preseleccionado_id,
             'errores': errores,
         },
     )

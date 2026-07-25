@@ -7,20 +7,50 @@
     <div class="col-lg-8">
         <div class="card">
             <div class="card-header">
-                <h5><i class="fas fa-{% if action == 'crear' %}plus{% else %}edit{% endif %}"></i> 
-                    {% if action == 'crear' %}Registrar Nueva Compra{% else %}Editar Compra #{{ compra.id }}{% endif %}
+                <h5>
+                    <i class="fas fa-{% if action == 'crear' %}plus{% else %}edit{% endif %}"></i>
+                    {% if action == 'crear' %}
+                        Registrar Nueva Compra
+                    {% else %}
+                        Editar Compra #{{ compra.id }}
+                    {% endif %}
                 </h5>
             </div>
             <div class="card-body">
-                <form method="POST">
+                <form method="POST" id='perfume-form'>
                     {% csrf_token %}
                     
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label for="{{ form.perfume.id_for_label }}" class="form-label">
+                            <label for="perfume-buscador" class="form-label">
                                 <i class="fas fa-fragrance"></i> Perfume *
                             </label>
+
                             {{ form.perfume }}
+
+                            <input
+                                type="search"
+                                id="perfume-buscador"
+                                class="form-control"
+                                list="lista-perfumes"
+                                placeholder="Escribe marca o nombre del perfume..."
+                                autocomplete="off"
+                                value="{% if form.instance.perfume %}{{ form.instance.perfume.id }} — {{ form.instance.perfume.marca }} — {{ form.instance.perfume.nombre }}{% elif form.initial.perfume %}{% for perfume in perfumes %}{% if perfume.id|stringformat:'s' == form.initial.perfume|stringformat:'s' %}{{ perfume.id }} — {{ perfume.marca }} — {{ perfume.nombre }}{% endif %}{% endfor %}{% endif %}"
+                            >
+
+                            <datalist id="lista-perfumes">
+                                {% for perfume in perfumes %}
+                                    <option value="{{ perfume.id }} — {{ perfume.marca }} — {{ perfume.nombre }}"></option>
+                                {% endfor %}
+                            </datalist>
+
+                            <div class="form-text">
+                                ¿No existe en el catálogo?
+                                <a href="{% url 'crear_perfume' %}?next={{ request.path|urlencode }}">
+                                    Crear perfume nuevo
+                                </a>
+                            </div>
+
                             {% if form.perfume.errors %}
                                 <div class="text-danger small">{{ form.perfume.errors }}</div>
                             {% endif %}
@@ -129,5 +159,50 @@
         // Inicializar
         calcularCostoTotal();
     });
+
+function seleccionarPerfumeDesdeBuscador() {
+    const buscador = document.getElementById('perfume-buscador');
+    const campoOculto = document.getElementById('id_perfume');
+
+    const coincidencia = buscador.value.match(/^(\d+)\s+—/);
+
+    if (coincidencia) {
+        campoOculto.value = coincidencia[1];
+    } else {
+        campoOculto.value = '';
+    }
+}
+
+document.getElementById('perfume-buscador').addEventListener(
+    'input',
+    seleccionarPerfumeDesdeBuscador
+);
+
+document.getElementById('perfume-buscador').addEventListener(
+    'change',
+    seleccionarPerfumeDesdeBuscador
+);
+
+document.getElementById('perfume-form').addEventListener('submit', function(event) {
+    seleccionarPerfumeDesdeBuscador();
+
+    if (!document.getElementById('id_perfume').value) {
+        event.preventDefault();
+        alert('Selecciona un perfume válido de la lista o crea uno nuevo.');
+    }
+});
+// Al cargar en modo edición, sincronizar el campo oculto
+(function() {
+    const buscador = document.getElementById('perfume-buscador');
+    const campoOculto = document.getElementById('id_perfume');
+
+    // Si ya hay un valor en el buscador al cargar (modo edición), extraer el ID
+    if (buscador.value) {
+        const coincidencia = buscador.value.match(/^(\d+)\s+—/);
+        if (coincidencia) {
+            campoOculto.value = coincidencia[1];
+        }
+    }
+})();
 </script>
 {% endblock %}

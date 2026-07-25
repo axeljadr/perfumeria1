@@ -1,47 +1,40 @@
 from django import forms
 from django.utils import timezone
 from .models import (
-    Compra, Presentacion, Movimiento, Concepto, 
-    ConfiguracionDecant, Perfume
+    Compra,
+    CompraDecant,
+    CompraInsumo,
+    Inventario,
+    Presentacion,
+    Movimiento,
+    Concepto,
+    ConfiguracionDecant,
 )
-from catalogo.models import Perfume  # Tu modelo existente
-
-
+from catalogo.models import Perfume
 # ============================================================
 # FORMULARIOS DE COMPRAS
 # ============================================================
 
 class CompraForm(forms.ModelForm):
-    """Formulario para registrar una compra"""
-    
     class Meta:
         model = Compra
         fields = [
-            'perfume', 'proveedor', 'cantidad_comprada', 
+            'perfume', 'proveedor', 'cantidad_comprada',
             'precio_unitario', 'fecha_compra', 'notas'
         ]
         widgets = {
+            'perfume': forms.HiddenInput(),
             'fecha_compra': forms.DateInput(attrs={'type': 'date'}),
-            'notas': forms.Textarea(attrs={'rows': 3, 'placeholder': 'Notas adicionales...'}),
+            'notas': forms.Textarea(
+                attrs={'rows': 3, 'placeholder': 'Notas adicionales...'}
+            ),
         }
-        labels = {
-            'perfume': 'Perfume',
-            'proveedor': 'Proveedor',
-            'cantidad_comprada': 'Cantidad comprada (unidades)',
-            'precio_unitario': 'Precio por unidad ($)',
-            'fecha_compra': 'Fecha de compra',
-            'notas': 'Notas',
-        }
-        help_texts = {
-            'cantidad_comprada': 'Número de perfumes completos de 100ml',
-            'precio_unitario': 'Precio al que compraste cada perfume',
-        }
-    
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Filtrar solo perfumes activos
+
         self.fields['perfume'].queryset = Perfume.objects.filter(activo=True)
-        # Establecer fecha actual por defecto
+
         if not self.instance.pk:
             self.fields['fecha_compra'].initial = timezone.now().date()
     
@@ -56,7 +49,68 @@ class CompraForm(forms.ModelForm):
         
         return cleaned_data
 
+class CompraDecantForm(forms.ModelForm):
+    """Compra de decants ya preparados."""
 
+    class Meta:
+        model = CompraDecant
+        fields = [
+            'perfume', 'proveedor', 'volumen_ml', 'cantidad',
+            'precio_unitario', 'fecha_compra', 'notas'
+        ]
+        widgets = {
+            'perfume': forms.HiddenInput(),
+            'fecha_compra': forms.DateInput(attrs={'type': 'date'}),
+            'notas': forms.Textarea(
+                attrs={'rows': 3, 'placeholder': 'Ejemplo: Decants de prueba, proveedor, lote, etc.'}
+            ),
+        }
+        labels = {
+            'volumen_ml': 'Volumen por decant (ml)',
+            'cantidad': 'Cantidad de decants',
+            'precio_unitario': 'Costo por decant ($)',
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.fields['perfume'].queryset = Perfume.objects.filter(activo=True)
+
+        if not self.instance.pk:
+            self.fields['fecha_compra'].initial = timezone.now().date()
+
+class CompraInsumoForm(forms.ModelForm):
+    """Compra de bolsas, frascos, jeringas, etiquetas y otros insumos."""
+
+    class Meta:
+        model = CompraInsumo
+        fields = [
+            'nombre', 'categoria', 'proveedor', 'cantidad',
+            'precio_unitario', 'fecha_compra', 'inventario', 'notas'
+        ]
+        widgets = {
+            'fecha_compra': forms.DateInput(attrs={'type': 'date'}),
+            'notas': forms.Textarea(
+                attrs={'rows': 3, 'placeholder': 'Ejemplo: 100 bolsas negras pequeñas'}
+            ),
+        }
+        labels = {
+            'nombre': 'Producto o insumo',
+            'categoria': 'Categoría',
+            'cantidad': 'Cantidad comprada',
+            'precio_unitario': 'Costo unitario ($)',
+            'inventario': 'Agregar al inventario',
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.fields['inventario'].queryset = Inventario.objects.filter(activo=True)
+        self.fields['inventario'].required = False
+        self.fields['inventario'].empty_label = 'No actualizar inventario'
+
+        if not self.instance.pk:
+            self.fields['fecha_compra'].initial = timezone.now().date()
 class CompraProcesarForm(forms.Form):
     """Formulario para procesar una compra (confirmar)"""
     confirmar = forms.BooleanField(
