@@ -274,3 +274,27 @@ def pedido_publico(request, token):
         'apartados/pedido_publico.html',
         {'pedido': pedido},
     )
+
+@staff_member_required
+def eliminar_pedido(request, pk):
+    """
+    Elimina un pedido duplicado o creado por error.
+    Solo permite eliminar si no tiene ningún pago registrado
+    (saldo == total, es decir total_pagado == 0).
+    """
+    pedido = get_object_or_404(PedidoApartado, pk=pk)
+
+    if pedido.total_pagado > 0:
+        messages.error(
+            request,
+            'No se puede eliminar este pedido porque ya tiene pagos registrados.'
+        )
+        return redirect('apartados:detalle', pk=pedido.pk)
+
+    if request.method == 'POST':
+        folio = pedido.folio
+        pedido.delete()
+        messages.success(request, f'Pedido {folio} eliminado correctamente.')
+        return redirect('apartados:lista_pedidos')
+
+    return redirect('apartados:detalle', pk=pedido.pk)

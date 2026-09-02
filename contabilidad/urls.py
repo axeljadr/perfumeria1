@@ -24,6 +24,10 @@ urlpatterns = [
     path('presentaciones/crear-multiple/', views.presentacion_batch_create, name='presentacion_batch_create'),
     path('presentaciones/get-by-perfume/', views.presentacion_get_by_perfume, name='presentacion_get_by_perfume'),
 path('presentaciones/calcular-decants/', views.calcular_decants_ajax, name='calcular_decants_ajax'),
+# Lista de precios PDF
+    path('presentaciones/lista-precios/', views.lista_precios_selector, name='lista_precios_selector'),
+    path('presentaciones/lista-precios/pdf/', views.lista_precios_pdf, name='lista_precios_pdf'),
+    path('presentaciones/lista-precios/json/', views.lista_precios_perfumes_json, name='lista_precios_perfumes_json'),
     
     # Movimientos contables
     path('movimientos/', views.movimiento_list, name='movimiento_list'),

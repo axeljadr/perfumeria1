@@ -13,4 +13,5 @@ urlpatterns = [
     path('apartados/pago/<int:pk>/eliminar/', views.eliminar_pago,    name='eliminar_pago'),
     path('pedidos/<int:pk>/liquidar/', views.liquidar_pedido, name='liquidar_pedido'),
     path("pedido/<uuid:token>/", views.pedido_publico, name="pedido_publico"),
+    path('<int:pk>/eliminar/', views.eliminar_pedido, name='eliminar_pedido'),
 ]

@@ -3,8 +3,8 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Sum, Q
 from django.utils import timezone
-from django.http import JsonResponse
-from decimal import Decimal, ROUND_HALF_UP
+from decimal import Decimal, InvalidOperation, ROUND_CEILING
+from django.http import JsonResponse, HttpResponse
 import math
 from datetime import datetime, timedelta
 
@@ -12,7 +12,7 @@ from .models import (
     Compra, Presentacion, Movimiento, Concepto, 
     ConfiguracionDecant, Perfume, CompraDecant, CompraInsumo
 )
-from catalogo.models import Perfume
+from catalogo.models import Perfume, FamiliaOlfativa
 from .forms import (
 
     CompraForm, CompraDecantForm, CompraInsumoForm, CompraProcesarForm, PresentacionForm, 
@@ -335,15 +335,6 @@ def presentacion_update(request, pk):
     })
 
 
-from decimal import Decimal, InvalidOperation
-
-from django.contrib import messages
-from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
-from django.shortcuts import redirect, render
-
-from .models import Perfume, Presentacion, ConfiguracionDecant
-
 
 @login_required
 def presentacion_batch_create(request):
@@ -355,8 +346,6 @@ def presentacion_batch_create(request):
         presentaciones__isnull=True,
     ).distinct()
 
-    # Esta configuración solo sirve para mostrar valores iniciales en el template.
-    # No se guarda dentro de Presentacion.
     configuracion_decant = ConfiguracionDecant.get_config()
 
     if request.method == 'POST':
@@ -544,12 +533,126 @@ def presentacion_get_by_perfume(request):
     return JsonResponse({
         'presentaciones': presentaciones,
     })
+import re
+from django.template.loader import render_to_string
+from xhtml2pdf import pisa
 
-from decimal import Decimal, InvalidOperation, ROUND_CEILING
-from django.http import JsonResponse
 
-# Asegúrate de importar el modelo desde donde lo tengas definido:
-# from .models import ConfiguracionDecant
+
+def _extraer_ml(volumen_str):
+    """Extrae el número de ml de un texto como '3', '3 ml', '3ml'."""
+    match = re.search(r'\d+', volumen_str or '')
+    return int(match.group()) if match else None
+
+
+@login_required
+def lista_precios_selector(request):
+    """Paso 1: filtrar y seleccionar fragancias"""
+    perfumes = Perfume.objects.all().order_by('marca', 'nombre')
+
+    genero = request.GET.get('genero')
+    if genero:
+        perfumes = perfumes.filter(genero=genero)
+
+    familia_id = request.GET.get('familia_olfativa')
+    if familia_id:
+        perfumes = perfumes.filter(familia_olfativa_id=familia_id)
+
+    marca = request.GET.get('marca')
+    if marca:
+        perfumes = perfumes.filter(marca__icontains=marca)
+
+    nombre = request.GET.get('nombre')
+    if nombre:
+        perfumes = perfumes.filter(nombre__icontains=nombre)
+
+    context = {
+        'perfumes': perfumes,
+        'familias': FamiliaOlfativa.objects.all().order_by('nombre'),
+        'generos': Perfume.GENERO_CHOICES,
+    }
+    return render(request, 'contabilidad/presentaciones/lista_precios.html', context)
+
+
+@login_required
+def lista_precios_pdf(request):
+    """Paso 2: generar el PDF con las fragancias seleccionadas"""
+    if request.method != 'POST':
+        return redirect('contabilidad:lista_precios_selector')
+
+    perfume_ids = request.POST.getlist('perfumes')
+    if not perfume_ids:
+        messages.error(request, 'Selecciona al menos una fragancia.')
+        return redirect('contabilidad:lista_precios_selector')
+
+    perfumes = Perfume.objects.filter(pk__in=perfume_ids).order_by('marca', 'nombre')
+
+    filas = []
+    for perfume in perfumes:
+        precios_decant = {3: '', 5: '', 10: ''}
+        precio_original = ''
+
+        for p in perfume.presentaciones.all():
+            if p.tipo == 'decant':
+                ml = _extraer_ml(p.volumen_ml)
+                if ml in precios_decant:
+                    precios_decant[ml] = p.precio
+            elif p.tipo == 'original':
+                precio_original = p.precio
+
+        filas.append({
+            'nombre': f'{perfume.marca} - {perfume.nombre}',
+            'ml3': precios_decant[3],
+            'ml5': precios_decant[5],
+            'ml10': precios_decant[10],
+            'original': precio_original,
+        })
+
+    context = {
+        'filas': filas,
+        'fecha': timezone.now().date(),
+    }
+
+    html = render_to_string('contabilidad/presentaciones/lista_precios_pdf.html', context)
+
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'inline; filename="lista_precios.pdf"'
+
+    pisa_status = pisa.CreatePDF(html, dest=response)
+    if pisa_status.err:
+        return HttpResponse('Error al generar el PDF', status=500)
+
+    return response
+
+@login_required
+def lista_precios_perfumes_json(request):
+    """Devuelve perfumes filtrados en JSON para actualizar la tabla sin recargar"""
+    perfumes = Perfume.objects.all().order_by('marca', 'nombre')
+
+    genero = request.GET.get('genero')
+    if genero:
+        perfumes = perfumes.filter(genero=genero)
+
+    familia_id = request.GET.get('familia_olfativa')
+    if familia_id:
+        perfumes = perfumes.filter(familia_olfativa_id=familia_id)
+
+    marca = request.GET.get('marca')
+    if marca:
+        perfumes = perfumes.filter(marca__icontains=marca)
+
+    nombre = request.GET.get('nombre')
+    if nombre:
+        perfumes = perfumes.filter(nombre__icontains=nombre)
+
+    data = [{
+        'id': p.id,
+        'marca': p.marca,
+        'nombre': p.nombre,
+        'genero': p.get_genero_display(),
+    } for p in perfumes]
+
+    return JsonResponse({'perfumes': data})
 
 
 @login_required
@@ -704,16 +807,14 @@ def configuracion_edit(request):
 
 
 
-
 @login_required
 def reportes(request):
     """Generación de reportes"""
     hoy = timezone.now().date()
-    
-    # Si hay parámetros GET, mostrar el reporte directamente (reportes rápidos)
+
     if request.GET.get('tipo'):
-        return generar_reporte(request.GET)
-    
+        return generar_reporte(request, request.GET)
+
     if request.method == 'POST':
         form = ReporteForm(request.POST)
         if form.is_valid():
@@ -721,17 +822,15 @@ def reportes(request):
             formato = form.cleaned_data['formato']
             fecha_inicio = form.cleaned_data['fecha_inicio']
             fecha_fin = form.cleaned_data['fecha_fin']
-            
-            # Si es HTML, mostrar en la misma página
+
             if formato == 'html':
                 params = {
                     'tipo': tipo_reporte,
                     'inicio': fecha_inicio.strftime('%Y-%m-%d'),
                     'fin': fecha_fin.strftime('%Y-%m-%d'),
                 }
-                return generar_reporte(params)
+                return generar_reporte(request, params)
             else:
-                # Para PDF o Excel, redirigir a otra vista (pendiente de implementar)
                 messages.info(request, f'Formato {formato} en desarrollo')
                 return redirect('contabilidad:reportes')
     else:
@@ -739,16 +838,16 @@ def reportes(request):
             'fecha_inicio': hoy.replace(day=1),
             'fecha_fin': hoy
         })
-    
+
     context = {
         'form': form,
         'hoy': hoy,
     }
-    
+
     return render(request, 'contabilidad/reportes/reportes.html', context)
 
 
-def generar_reporte(params):
+def generar_reporte(request, params):
     """Genera el reporte según los parámetros"""
     tipo = params.get('tipo')
     fecha_inicio = params.get('inicio')

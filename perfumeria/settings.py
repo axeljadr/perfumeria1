@@ -68,7 +68,6 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     'cloudinary',
     'catalogo',  
-    'ordencompra',  
     'contabilidad',  
     'apartados',  
     'rest_framework',

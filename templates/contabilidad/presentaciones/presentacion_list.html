@@ -9,6 +9,9 @@
         <a href="{% url 'contabilidad:presentacion_batch_create' %}" class="btn btn-primary">
             <i class="fas fa-plus-circle"></i> Crear Múltiples
         </a>
+        <a href="{% url 'contabilidad:lista_precios_selector' %}" class="btn btn-outline-primary">
+    <i class="fas fa-file-pdf"></i> Generar Lista de Precios
+</a>
     </div>
 </div>
 
@@ -55,55 +58,6 @@
     </div>
 </div>
 
-<!-- Resumen -->
-<div class="row mb-4">
-    <div class="col-md-4">
-        <div class="card card-stats border-primary">
-            <div class="card-body">
-                <div class="d-flex justify-content-between">
-                    <div>
-                        <h6 class="text-muted">Total Presentaciones</h6>
-                        <h3>{{ presentaciones.count }}</h3>
-                    </div>
-                    <div class="stat-icon text-primary">
-                        <i class="fas fa-boxes"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card card-stats border-success">
-            <div class="card-body">
-                <div class="d-flex justify-content-between">
-                    <div>
-                        <h6 class="text-muted">Stock Total</h6>
-                        <h3>{{ total_stock }}</h3>
-                    </div>
-                    <div class="stat-icon text-success">
-                        <i class="fas fa-cubes"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card card-stats border-warning">
-            <div class="card-body">
-                <div class="d-flex justify-content-between">
-                    <div>
-                        <h6 class="text-muted">Valor del Inventario</h6>
-                        <h3>${{ valor_inventario|floatformat:2 }}</h3>
-                    </div>
-                    <div class="stat-icon text-warning">
-                        <i class="fas fa-dollar-sign"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
 <!-- Tabla -->
 <div class="card">
     <div class="card-body p-0">
@@ -111,11 +65,8 @@
             <thead>
                 <tr>
                     <th>Perfume</th>
-                    <th>Tipo</th>
                     <th>Volumen</th>
                     <th>Precio</th>
-                    <th>Stock</th>
-                    <th>Estado</th>
                     <th>Acciones</th>
                 </tr>
             </thead>
@@ -126,31 +77,12 @@
                         <strong>{{ p.perfume.nombre }}</strong>
                         <br>
                         <small class="text-muted">{{ p.perfume.marca }}</small>
-                    </td>
-                    <td>
                         <span class="badge {% if p.tipo == 'original' %}bg-success{% elif p.tipo == 'decant' %}bg-info{% elif p.tipo == 'set' %}bg-warning{% else %}bg-secondary{% endif %}">
                             {{ p.get_tipo_display }}
                         </span>
                     </td>
                     <td>{{ p.volumen_ml }} ml</td>
                     <td><strong>${{ p.precio }}</strong></td>
-                    <td>
-                        <span class="badge {% if p.stock > 10 %}bg-success{% elif p.stock > 0 %}bg-warning{% else %}bg-danger{% endif %}">
-                            {{ p.stock }}
-                        </span>
-                    </td>
-                    <td>
-                        {% if p.activo %}
-                            <span class="badge bg-success">Activo</span>
-                        {% else %}
-                            <span class="badge bg-danger">Inactivo</span>
-                        {% endif %}
-                        {% if p.precio_automatico %}
-                            <span class="badge bg-info" title="Precio calculado automáticamente">
-                                <i class="fas fa-robot"></i> Auto
-                            </span>
-                        {% endif %}
-                    </td>
                     <td>
                         <a href="{% url 'contabilidad:presentacion_update' p.pk %}" class="btn btn-sm btn-outline-primary" title="Editar">
                             <i class="fas fa-edit"></i>

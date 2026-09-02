@@ -253,7 +253,22 @@
     >
       {% csrf_token %}
       <input type="hidden" name="estado" value="cancelado" />
-      <button type="submit" class="btn-secondary">Marcar cancelado</button>
+      <button 
+      type="submit"
+      style="
+        background: transparent;
+        color: #b02a2a;
+        border: 1px solid #b02a2a;
+        padding: 0.45rem 1.2rem;
+        border-radius: 0.35rem;
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.15s, color 0.15s;
+      "
+      onmouseover="this.style.background='#b02a2a'; this.style.color='#fff';"
+      onmouseout="this.style.background='transparent'; this.style.color='#b02a2a';"
+    >Marcar cancelado</button>
     </form>
     {% endif %} {% if pedido.estado == 'liquidado' %}
     <form
@@ -278,6 +293,36 @@
     {% endif %}
   </div>
   {% endif %}
+  {% if pedido.total_pagado == 0 %}
+<div style="margin-top: 1.5rem;">
+  <form
+    method="post"
+    action="{% url 'apartados:eliminar_pedido' pedido.pk %}"
+    onsubmit="return confirm('¿Eliminar definitivamente el pedido {{ pedido.folio }}? Esta acción no se puede deshacer.');"
+    style="display: inline"
+  >
+    {% csrf_token %}
+    <button
+      type="submit"
+      style="
+        background: transparent;
+        color: #b02a2a;
+        border: 1px solid #b02a2a;
+        padding: 0.45rem 1.2rem;
+        border-radius: 0.35rem;
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.15s, color 0.15s;
+      "
+      onmouseover="this.style.background='#b02a2a'; this.style.color='#fff';"
+      onmouseout="this.style.background='transparent'; this.style.color='#b02a2a';"
+    >
+      Eliminar orden
+    </button>
+  </form>
+</div>
+{% endif %}
 
   <!-- ── Sección QR ── -->
   <div

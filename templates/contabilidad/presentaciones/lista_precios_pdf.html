@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        @page {
+            size: letter portrait;
+            margin: 2cm;
+        }
+        body {
+            font-family: Helvetica, Arial, sans-serif;
+            font-size: 11px;
+            color: #222;
+        }
+        h1 {
+            font-size: 18px;
+            margin-bottom: 2px;
+        }
+        .fecha {
+            font-size: 10px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            table-layout: fixed;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 6px 8px;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+        th {
+            background-color: #1a1a2e;
+            color: white;
+            text-align: left;
+        }
+        td {
+            border-bottom: 1px solid #ddd;
+        }
+        tr:nth-child(even) {
+            background-color: #f4f6f9;
+        }
+        .col-nombre { width: 34%; }
+        .col-precio { width: 16%; text-align: right; }
+    </style>
+</head>
+<body>
+    <h1>Lista de Precios</h1>
+    <div class="fecha">Generado el {{ fecha|date:"d/m/Y" }}</div>
+
+    <table>
+        <thead>
+            <tr>
+                <th class="col-nombre">Fragancia</th>
+                <th class="col-precio">3 ml</th>
+                <th class="col-precio">5 ml</th>
+                <th class="col-precio">10 ml</th>
+                <th class="col-precio">Original</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for fila in filas %}
+            <tr>
+                <td class="col-nombre">{{ fila.nombre }}</td>
+                <td class="col-precio">{% if fila.ml3 %}${{ fila.ml3 }}{% endif %}</td>
+                <td class="col-precio">{% if fila.ml5 %}${{ fila.ml5 }}{% endif %}</td>
+                <td class="col-precio">{% if fila.ml10 %}${{ fila.ml10 }}{% endif %}</td>
+                <td class="col-precio">{% if fila.original %}${{ fila.original }}{% endif %}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
