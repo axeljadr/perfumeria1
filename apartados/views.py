@@ -12,7 +12,7 @@ import uuid
 from django_ratelimit.decorators import ratelimit
 
 
-def obtener_ip_cliente(request):
+def obtener_ip_cliente(group, request):
     forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR', '')
     if forwarded_for:
         return forwarded_for.split(',')[0].strip()
