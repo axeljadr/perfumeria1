@@ -9,8 +9,18 @@ from .forms import PedidoApartadoForm, PedidoApartadoItemFormSet, PagoApartadoFo
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 import uuid
+from django_ratelimit.decorators import ratelimit
 
 
+def obtener_ip_cliente(request):
+    forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR', '')
+    if forwarded_for:
+        return forwarded_for.split(',')[0].strip()
+
+    return request.META.get('REMOTE_ADDR', '')
+
+
+@ratelimit(key=obtener_ip_cliente, rate='40/m', block=True)
 def lista_pedidos(request):
     estado = request.GET.get('estado')
     pedidos = (
@@ -252,11 +262,9 @@ def liquidar_pedido(request, pk):
     )
     return redirect('apartados:detalle', pk=pk)
 
+
+@ratelimit(key=obtener_ip_cliente, rate='40/m', block=True)
 def pedido_publico(request, token):
-    """
-    Vista pública: accesible sin login mediante el token UUID del QR.
-    Muestra solo la información del pedido relevante para el cliente.
-    """
     pedido = get_object_or_404(
         PedidoApartado.objects.prefetch_related(
     'items',

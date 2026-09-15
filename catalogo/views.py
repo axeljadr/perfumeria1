@@ -8,7 +8,16 @@ from django.utils import timezone
 from datetime import timedelta
 from django.utils.http import url_has_allowed_host_and_scheme
 from urllib.parse import urlencode
+from django_ratelimit.decorators import ratelimit
 
+def obtener_ip_cliente(request):
+    forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR', '')
+    if forwarded_for:
+        return forwarded_for.split(',')[0].strip()
+
+    return request.META.get('REMOTE_ADDR', '')
+
+@ratelimit(key=obtener_ip_cliente, rate='40/m', block=True)
 def catalogo(request):
     # Obtener todos los perfumes activos
     perfumes = Perfume.objects.filter(activo=True)
@@ -77,7 +86,7 @@ def catalogo(request):
     
     return render(request, 'catalogo.html', context)
 
-
+@ratelimit(key=obtener_ip_cliente, rate='40/m', block=True)
 def detalle_perfume(request, pk):
     perfume = get_object_or_404(Perfume, pk=pk, activo=True)
     presentaciones = perfume.presentaciones.filter(activo=True)
@@ -139,21 +148,25 @@ def eliminar_perfume(request, pk):
 
 from django.http import JsonResponse
 
+@ratelimit(key=obtener_ip_cliente, rate='40/m', block=True)
 def buscar_familia(request):
     q = request.GET.get('q', '').strip()
     resultados = FamiliaOlfativa.objects.filter(nombre__icontains=q).values('id', 'nombre')[:10]
     return JsonResponse(list(resultados), safe=False)
 
+@ratelimit(key=obtener_ip_cliente, rate='40/m', block=True)
 def buscar_acorde(request):
     q = request.GET.get('q', '').strip()
     resultados = Acorde.objects.filter(nombre__icontains=q).values('id', 'nombre')[:10]
     return JsonResponse(list(resultados), safe=False)
 
+@ratelimit(key=obtener_ip_cliente, rate='40/m', block=True)
 def buscar_nota(request):
     q = request.GET.get('q', '').strip()
     resultados = Nota.objects.filter(nombre__icontains=q).values('id', 'nombre')[:10]
     return JsonResponse(list(resultados), safe=False)
 
+@staff_member_required
 def crear_familia(request):
     if request.method == 'POST':
         nombre = request.POST.get('nombre', '').strip()
@@ -162,6 +175,7 @@ def crear_familia(request):
             return JsonResponse({'id': obj.id, 'nombre': obj.nombre})
     return JsonResponse({'error': 'Nombre requerido'}, status=400)
 
+@staff_member_required
 def crear_acorde(request):
     if request.method == 'POST':
         nombre = request.POST.get('nombre', '').strip()
@@ -170,6 +184,7 @@ def crear_acorde(request):
             return JsonResponse({'id': obj.id, 'nombre': obj.nombre})
     return JsonResponse({'error': 'Nombre requerido'}, status=400)
 
+@staff_member_required
 def crear_nota(request):
     if request.method == 'POST':
         nombre = request.POST.get('nombre', '').strip()

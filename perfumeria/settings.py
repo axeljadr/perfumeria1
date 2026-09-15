@@ -46,7 +46,7 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 SECRET_KEY=os.getenv('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
 ALLOWED_HOSTS = [
     'localhost',
@@ -101,7 +101,7 @@ TEMPLATES = [
         },
     },
 ]
-MAKE_API_KEY = "una-clave-secreta-larga-aqui"
+MAKE_API_KEY = os.getenv('MAKE_API_KEY')
 
 WSGI_APPLICATION = "perfumeria.wsgi.application"
 
@@ -131,3 +131,43 @@ STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+
+if not DEBUG:
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_HSTS_SECONDS = 31536000
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    X_FRAME_OPTIONS = 'DENY'
+
+REDIS_URL = os.getenv('REDIS_URL')
+
+if REDIS_URL:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django_redis.cache.RedisCache',
+            'LOCATION': REDIS_URL,
+            'OPTIONS': {
+                'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+                'CONNECTION_POOL_KWARGS': {
+                    'ssl_cert_reqs': None,
+                },
+            },
+            'KEY_PREFIX': 'perfumeria',
+            'TIMEOUT': 300,
+        }
+    }
+else:
+    # Permite trabajar localmente aun si no configuraste Redis.
+    # No se debe usar como rate limit distribuido con varios workers.
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+            'LOCATION': 'perfumeria-local',
+            'TIMEOUT': 300,
+        }
+    }
+
+RATELIMIT_IP_META_KEY = 'HTTP_X_FORWARDED_FOR'
