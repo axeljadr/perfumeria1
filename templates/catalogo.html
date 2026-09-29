@@ -4,6 +4,7 @@
 {% block title %}Catálogo — Arabes en Reynosa{% endblock %}
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/catalogo.css' %}">
+<link rel="stylesheet" href="{% static 'css/catalogo.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -36,15 +37,12 @@
     {% endif %}
 </div>
 
-<!-- WRAPPER -->
 <div class="filtros-wrapper" id="filtrosWrapper">
     <section class="filtros">
         <form method="GET" class="filtros-form" id="filtrosForm">
-            <!-- Búsqueda -->
             <input type="text" name="q" placeholder="Buscar perfume o marca..."
                    value="{{ request.GET.q }}" class="filtro-input">
 
-            <!-- Género -->
             <select name="genero" class="filtro-select">
                 <option value="">Género</option>
                 {% for value, label in generos %}
@@ -54,7 +52,6 @@
                 {% endfor %}
             </select>
 
-            <!-- Familia -->
             <select name="familia" class="filtro-select">
                 <option value="">Familia olfativa</option>
                 {% for f in familias %}
@@ -64,7 +61,6 @@
                 {% endfor %}
             </select>
 
-            <!-- Acordes múltiple -->
             <select name="acorde" multiple class="filtro-select" size="4">
                 <option value="">— Todos los acordes —</option>
                 {% for a in acordes %}
@@ -76,7 +72,6 @@
             </select>
             <small class="help-text">Ctrl+clic para seleccionar múltiple</small>
 
-            <!-- Longevidad -->
             <select name="longevidad" class="filtro-select">
                 <option value="">Longevidad</option>
                 {% for value, label in longevidad_opciones %}
@@ -86,7 +81,6 @@
                 {% endfor %}
             </select>
 
-            <!-- Estela -->
             <select name="estela" class="filtro-select">
                 <option value="">Estela</option>
                 {% for value, label in estela_opciones %}
@@ -96,7 +90,6 @@
                 {% endfor %}
             </select>
 
-            <!-- Uso -->
             <select name="uso" class="filtro-select">
                 <option value="">Uso</option>
                 {% for value, label in uso_opciones %}
@@ -106,7 +99,6 @@
                 {% endfor %}
             </select>
 
-            <!-- ORDEN -->
             <select name="orden" class="filtro-select">
                 <option value="">Ordenar por</option>
                 <option value="nombre" {% if request.GET.orden == "nombre" %}selected{% endif %}>Nombre (A-Z)</option>
@@ -131,7 +123,6 @@
         {% endif %}
     </div>
     <div class="filtros-activos" id="filtrosActivos">
-        <!-- Filtros activos -->
     </div>
 </div>
 
