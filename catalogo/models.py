@@ -155,6 +155,16 @@ class Perfume(models.Model):
             print("ERROR extrayendo color:", e)
             return None
 
+
+    @property
+    def longevidad_nivel(self):
+        niveles = {'baja': 2, 'moderada': 3, 'alta': 4, 'muy_alta': 5}
+        return niveles.get(self.longevidad, 0)
+
+    @property
+    def estela_nivel(self):
+        niveles = {'intima': 2, 'moderada': 3, 'fuerte': 4, 'muy_fuerte': 5}
+        return niveles.get(self.estela, 0)
     def save(self, *args, **kwargs):
         if self.imagen_portada:
             nuevo_color = self.extraer_color_dominante()

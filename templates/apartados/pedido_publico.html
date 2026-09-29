@@ -359,7 +359,40 @@
     color: var(--accent);
     border: 1px solid rgba(201,169,110,.2);
   }
+  .tag-color {
+    font-family: 'Helvetica Neue', sans-serif;
+    font-size: .65rem;
+    padding: .18rem .55rem;
+    border-radius: 99px;
+    border: 1.5px solid var(--borde);
+    box-shadow: 0 0 4px 0 var(--borde);
+    white-space: nowrap;
+}
 
+.dots {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #2a2a32;
+    flex-shrink: 0;
+}
+
+.dot.lleno {
+    background: var(--accent, var(--dorado));
+}
+
+.dots-texto {
+    font-size: 0.75rem;
+    color: var(--text-secondary, var(--gris-claro));
+    margin-left: 0.4rem;
+    text-transform: capitalize;
+}
   /* ── MODAL IMAGEN ── */
   .img-modal-overlay {
     display: none;
@@ -632,28 +665,46 @@
         {% if p.notas.exists %}
         <div class="detail-row">
           <span class="detail-label">Notas</span>
-          {% for nota in p.notas.all %}<span class="tag">{{ nota.nombre }}</span>{% endfor %}
+          {% for nota in p.notas.all %}
+          <span class="tag-color" style="background-color: {{ nota.color }}; color: {{ nota.color_texto }}; --borde: {{ nota.color_borde }};">
+              {{ nota.nombre }}
+          </span>
+          {% endfor %}
         </div>
         {% endif %}
 
         {% if p.acordes.exists %}
         <div class="detail-row">
           <span class="detail-label">Acordes</span>
-          {% for acorde in p.acordes.all %}<span class="tag">{{ acorde.nombre }}</span>{% endfor %}
+          {% for acorde in p.acordes.all %}
+          <span class="tag-color" style="background-color: {{ acorde.color }}; color: {{ acorde.color_texto }}; --borde: {{ acorde.color_borde }};">
+              {{ acorde.nombre }}
+          </span>
+          {% endfor %}
         </div>
         {% endif %}
 
+        {% load perfume_extras %}
+
         {% if p.longevidad %}
-        <div class="detail-row">
-          <span class="detail-label">Longevidad</span>
-          <span class="tag">{{ p.get_longevidad_display }}</span>
+        <div class="perfil-item">
+            <span class="perfil-label">Longevidad</span>
+            <div class="dots">
+                {% for i in p.longevidad_nivel|rango %}<span class="dot lleno"></span>{% endfor %}
+                {% for i in p.longevidad_nivel|rango_vacio %}<span class="dot"></span>{% endfor %}
+                <span class="dots-texto">{{ p.get_longevidad_display }}</span>
+            </div>
         </div>
         {% endif %}
 
         {% if p.estela %}
-        <div class="detail-row">
-          <span class="detail-label">Estela</span>
-          <span class="tag">{{ p.get_estela_display }}</span>
+        <div class="perfil-item">
+            <span class="perfil-label">Estela</span>
+            <div class="dots">
+                {% for i in p.estela_nivel|rango %}<span class="dot lleno"></span>{% endfor %}
+                {% for i in p.estela_nivel|rango_vacio %}<span class="dot"></span>{% endfor %}
+                <span class="dots-texto">{{ p.get_estela_display }}</span>
+            </div>
         </div>
         {% endif %}
 
