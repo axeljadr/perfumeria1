@@ -12,7 +12,6 @@
     <p>Descubre nuestra colección de perfumes árabes</p>
 </section>
 
-<!-- CONTENEDOR DE BOTONES -->
 <div class="filtros-toggle-container">
     <button class="toggle-filtros-btn" onclick="toggleFiltros()" aria-expanded="false">
         <span class="icono-filtro">
@@ -37,7 +36,7 @@
     {% endif %}
 </div>
 
-<!-- WRAPPER DE FILTROS -->
+<!-- WRAPPER -->
 <div class="filtros-wrapper" id="filtrosWrapper">
     <section class="filtros">
         <form method="GET" class="filtros-form" id="filtrosForm">
@@ -124,7 +123,6 @@
     </section>
 </div>
 
-<!-- RESULTADOS INFO -->
 <div class="resultados-info">
     <div class="contador">
         <strong>{{ perfumes.count }}</strong> perfume{% if perfumes.count != 1 %}s{% endif %} encontrado{% if perfumes.count != 1 %}s{% endif %}
@@ -137,7 +135,6 @@
     </div>
 </div>
 
-<!-- GRID DE PERFUMES -->
 <section class="perfumes-grid">
     {% for perfume in perfumes %}
     <div class="perfume-card-wrapper">
@@ -179,85 +176,14 @@
     </div>
     {% empty %}
     <p class="sin-resultados">
-        <span class="icono-grande">🔍</span>
+        <span class="icono-grande">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" 
+            stroke-linejoin="round" class="lucide lucide-search preview-icon"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>
+        </span>
         No se encontraron perfumes con esos filtros.
     </p>
     {% endfor %}
 </section>
-
-<script>
-    // Contar filtros activos
-    function contarFiltrosActivos() {
-        const params = new URLSearchParams(window.location.search);
-        let count = 0;
-        for (let [key, value] of params) {
-            if (key !== 'page' && value && value.trim() !== '') {
-                count++;
-            }
-        }
-        return count;
-    }
-
-    // Actualizar badge
-    function actualizarBadge() {
-        const badge = document.getElementById('badgeFiltros');
-        const count = contarFiltrosActivos();
-        if (count > 0) {
-            badge.textContent = count;
-            badge.style.display = 'inline-block';
-        } else {
-            badge.textContent = '0';
-            badge.style.display = 'none';
-        }
-    }
-
-    // Toggle filtros
-    function toggleFiltros() {
-        const wrapper = document.getElementById('filtrosWrapper');
-        const btn = document.querySelector('.toggle-filtros-btn');
-        const text = document.getElementById('toggle-text');
-        const icon = document.getElementById('toggle-icon');
-        
-        wrapper.classList.toggle('abierto');
-        
-        if (wrapper.classList.contains('abierto')) {
-            text.textContent = 'Ocultar filtros';
-            icon.classList.add('rotado');
-            btn.setAttribute('aria-expanded', 'true');
-        } else {
-            text.textContent = 'Mostrar filtros';
-            icon.classList.remove('rotado');
-            btn.setAttribute('aria-expanded', 'false');
-        }
-    }
-
-    // Eliminar filtro específico
-    function eliminarFiltro(nombre) {
-        const url = new URL(window.location.href);
-        if (nombre === 'acorde') {
-            url.searchParams.delete('acorde');
-        } else {
-            url.searchParams.delete(nombre);
-        }
-        window.location.href = url.toString();
-    }
-
-    // Abrir filtros automáticamente si hay filtros activos
-    document.addEventListener('DOMContentLoaded', function() {
-        const tieneFiltros = contarFiltrosActivos() > 0;
-        actualizarBadge();
-        
-        if (tieneFiltros) {
-            const wrapper = document.getElementById('filtrosWrapper');
-            const btn = document.querySelector('.toggle-filtros-btn');
-            const text = document.getElementById('toggle-text');
-            const icon = document.getElementById('toggle-icon');
-            
-            wrapper.classList.add('abierto');
-            text.textContent = 'Ocultar filtros';
-            icon.classList.add('rotado');
-            btn.setAttribute('aria-expanded', 'true');
-        }
-    });
-</script>
+{% load static %}
+<script src="{% static 'js/catalogo.js' %}"></script>
 {% endblock %}

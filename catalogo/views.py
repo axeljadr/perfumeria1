@@ -90,9 +90,11 @@ def catalogo(request):
 def detalle_perfume(request, pk):
     perfume = get_object_or_404(Perfume, pk=pk, activo=True)
     presentaciones = perfume.presentaciones.filter(activo=True)
+    presentaciones_admin = perfume.presentaciones.all().order_by('tipo', 'volumen_ml')
     return render(request, 'perfum_detail.html', {
         'perfume': perfume,
         'presentaciones': presentaciones,
+        'presentaciones_admin': presentaciones_admin,
     })
 
 
@@ -200,7 +202,7 @@ def familias_lista(request):
     form = FamiliaOlfativaForm()
 
     if request.method == 'POST':
-        form = FamiliaOlfativaForm(request.POST)
+        form = FamiliaOlfativaForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
             return redirect('familias_lista')
@@ -214,7 +216,7 @@ def familias_lista(request):
 @staff_member_required
 def familia_editar(request, pk):
     familia = get_object_or_404(FamiliaOlfativa, pk=pk)
-    form = FamiliaOlfativaForm(request.POST or None, instance=familia)
+    form = FamiliaOlfativaForm(request.POST or None, request.FILES or None, instance=familia)
     if form.is_valid():
         form.save()
         return redirect('familias_lista')

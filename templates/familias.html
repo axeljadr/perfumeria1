@@ -17,12 +17,17 @@
         <!-- Formulario agregar -->
         <div class="gestion-form">
             <h3>Nueva familia</h3>
-            <form method="POST">
+            <form method="POST" enctype="multipart/form-data">
                 {% csrf_token %}
                 <div class="form-group">
                     <label>Nombre</label>
                     {{ form.nombre }}
                     {{ form.nombre.errors }}
+                </div>
+                <div class="form-group">
+                    <label>Imagen de fondo</label>
+                    {{ form.imagen_fondo }}
+                    {{ form.imagen_fondo.errors }}
                 </div>
                 <button type="submit" class="btn-primary">Agregar</button>
             </form>

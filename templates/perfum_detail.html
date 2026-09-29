@@ -82,9 +82,11 @@
         {% if perfume.acordes.all %}
         <div class="acordes">
             <h3>Acordes principales</h3>
-            <div class="acordes-lista">
+            <div class="tags-grid">
                 {% for acorde in perfume.acordes.all %}
-                <span class="tag-acorde">{{ acorde.nombre }}</span>
+                <span class="tag-color" style="background-color: {{ acorde.color }}; color: {{ acorde.color_texto }}; --borde: {{ acorde.color_borde }};">
+                    {{ acorde.nombre }}
+                </span>
                 {% endfor %}
             </div>
         </div>
@@ -93,9 +95,11 @@
         {% if perfume.notas.all %}
         <div class="notas">
             <h3>Notas</h3>
-            <div class="notas-lista">
+            <div class="tags-grid">
                 {% for nota in perfume.notas.all %}
-                <span class="tag-nota">{{ nota.nombre }}</span>
+                <span class="tag-color" style="background-color: {{ nota.color }}; color: {{ nota.color_texto }}; --borde: {{ nota.color_borde }};">
+                    {{ nota.nombre }}
+                </span>
                 {% endfor %}
             </div>
         </div>
@@ -117,7 +121,7 @@
             <a href="{% url 'presentacion_crear' perfume.pk %}" class="btn-primary btn-sm">+ Agregar</a>
         </div>
         <div class="admin-lista">
-            {% for p in presentaciones %}
+            {% for p in presentaciones_admin %}
             <div class="admin-item">
                 <div class="admin-item-info">
                     <span class="admin-item-nombre">{{ p.get_tipo_display }} — {{ p.volumen_ml }}</span>
@@ -135,7 +139,7 @@
                     {% if p.apartados_activos >= p.stock and p.stock > 0 %}
                     <span style="font-size:0.65rem;color:#8b0000;letter-spacing:0.05em;font-weight:600;">TODO APARTADO</span>
                     {% endif %}
-                    <span class="admin-item-estado">{% if p.activo %}Activo{% else %}Inactivo{% endif %}</span>
+                    <span class="admin-item-estado">{% if p.activo %}Activo{% else %}<strong style="color:#ff0000;"> Inactivo </strong>{% endif %}</span>
                 </div>
                 <div class="admin-item-acciones">
                     <a href="{% url 'presentacion_editar' p.pk %}">Editar</a>

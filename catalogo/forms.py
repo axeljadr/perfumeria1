@@ -36,20 +36,26 @@ PresentacionFormSet = forms.inlineformset_factory(
 class FamiliaOlfativaForm(forms.ModelForm):
     class Meta:
         model = FamiliaOlfativa
-        fields = ['nombre']
+        fields = ['nombre', 'imagen_fondo']
 
 
 
 class AcordeForm(forms.ModelForm):
     class Meta:
         model = Acorde
-        fields = ['nombre']
+        fields = ['nombre', 'color']
+        widgets = {
+            'color': forms.TextInput(attrs={'type': 'color'}),
+        }
 
 
 class NotaForm(forms.ModelForm):
     class Meta:
         model = Nota
-        fields = ['nombre', 'imagen']
+        fields = ['nombre', 'imagen', 'color']
+        widgets = {
+            'color': forms.TextInput(attrs={'type': 'color'}),
+        }
 
 class PresentacionForm(forms.ModelForm):
     class Meta:
