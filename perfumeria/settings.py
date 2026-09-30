@@ -171,3 +171,5 @@ else:
     }
 
 RATELIMIT_IP_META_KEY = 'HTTP_X_FORWARDED_FOR'
+# settings.py
+RATELIMIT_VIEW = 'tuapp.views.ratelimited_error'

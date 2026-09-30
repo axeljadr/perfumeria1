@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Demasiadas solicitudes</title>
+  <style>
+    :root {
+      --bg-base: #1A1A2E;
+      --bg-card: #141417;
+      --border: #2a2a32;
+      --text-primary: #f0f0f5;
+      --text-secondary: #afafb9;
+      --text-muted: #858588;
+      --accent: #c9a96e;
+      --accent-dim: rgba(201,169,110,.12);
+      --red: #f87171;
+      --red-dim: rgba(248,113,113,.12);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg-base);
+      color: var(--text-primary);
+      font-family: 'Georgia', serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      max-width: 440px;
+      width: 100%;
+      padding: 2.5rem 2rem;
+      text-align: center;
+    }
+    .icon-wrap {
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 1.5rem;
+      border-radius: 50%;
+      background: var(--red-dim);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .icon-wrap svg {
+      width: 30px;
+      height: 30px;
+      color: var(--red);
+    }
+    .codigo {
+      font-family: 'Helvetica Neue', sans-serif;
+      font-size: .68rem;
+      letter-spacing: .22em;
+      text-transform: uppercase;
+      color: var(--red);
+      margin-bottom: .6rem;
+    }
+    h1 {
+      font-size: 1.5rem;
+      margin-bottom: .75rem;
+      color: var(--text-primary);
+    }
+    p {
+      font-family: 'Helvetica Neue', sans-serif;
+      font-size: .88rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+      margin-bottom: 1.75rem;
+    }
+    .brand {
+      font-family: 'Helvetica Neue', sans-serif;
+      font-size: .62rem;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 1.5rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <p class="brand">Árabes en Reynosa</p>
+    <div class="icon-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="8" x2="12" y2="12"/>
+        <line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+    </div>
+    <p class="codigo">Error 429</p>
+    <h1>Demasiadas solicitudes</h1>
+    <p>Has realizado muchos intentos en poco tiempo. Por tu seguridad, esta página se bloqueó temporalmente. Espera unos minutos e inténtalo de nuevo.</p>
+  </div>
+</body>
+</html>
