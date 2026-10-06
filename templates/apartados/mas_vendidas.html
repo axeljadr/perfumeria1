@@ -1,0 +1,74 @@
+
+{% extends 'contabilidad/base_contabilidad.html' %}
+{% block page_title %}Presentaciones más vendidas{% endblock %}
+
+{% block content %}
+<div class="card mb-3">
+  <div class="card-body">
+    <form method="get" class="row g-2 align-items-end">
+      <div class="col-md-3">
+        <label class="form-label">Desde</label>
+        <input type="date" name="fecha_inicio" value="{{ fecha_inicio|date:'Y-m-d' }}" class="form-control">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Hasta</label>
+        <input type="date" name="fecha_fin" value="{{ fecha_fin|date:'Y-m-d' }}" class="form-control">
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Tipo</label>
+        <select name="tipo" class="form-select">
+          <option value="">Todos</option>
+          {% for v, l in tipos %}
+            <option value="{{ v }}" {% if tipo == v %}selected{% endif %}>{{ l }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" name="incluir_abiertos" value="1"
+                 id="inc" {% if incluir_abiertos %}checked{% endif %}>
+          <label class="form-check-label" for="inc">Incluir abiertos</label>
+        </div>
+      </div>
+      <div class="col-md-2">
+        <button class="btn btn-primary w-100"><i class="fas fa-filter"></i> Filtrar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header d-flex justify-content-between">
+    <h5 class="mb-0"><i class="fas fa-trophy"></i> Ranking</h5>
+    <a href="{% url 'apartados:reporte_semanal' %}" class="btn btn-sm btn-outline-secondary">
+      <i class="fas fa-print"></i> Reporte semanal
+    </a>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-striped mb-0">
+      <thead>
+        <tr>
+          <th>#</th><th>Perfume</th><th>Presentación</th>
+          <th class="text-end">Veces en pedidos</th>
+          <th class="text-end">Unidades</th>
+          <th class="text-end">Ingresos</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in ranking %}
+        <tr>
+          <td>{{ forloop.counter }}</td>
+          <td>{{ r.presentacion__perfume__marca }} — {{ r.presentacion__perfume__nombre }}</td>
+          <td>{{ r.presentacion__tipo|capfirst }} {{ r.presentacion__volumen_ml }} ml</td>
+          <td class="text-end">{{ r.veces_en_pedidos }}</td>
+          <td class="text-end"><strong>{{ r.unidades }}</strong></td>
+          <td class="text-end">${{ r.ingresos|floatformat:2 }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" class="text-center text-muted py-4">Sin ventas en el periodo.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

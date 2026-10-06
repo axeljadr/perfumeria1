@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Reporte semanal {{ lunes|date:"d/m/Y" }} - {{ domingo|date:"d/m/Y" }}</title>
+<style>
+  body { font-family: Arial, sans-serif; font-size: 12px; color: #222; margin: 24px; }
+  h1 { font-size: 20px; margin: 0; }
+  h2 { font-size: 14px; margin: 22px 0 6px; border-bottom: 2px solid #222; padding-bottom: 3px; }
+  .barra { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+  .nav a, .nav button { margin-right: 6px; padding: 5px 10px; border: 1px solid #999;
+        background: #f5f5f5; text-decoration: none; color: #222; border-radius: 4px; cursor: pointer; font-size: 12px; }
+  table { width: 100%; border-collapse: collapse; margin-bottom: 6px; }
+  th, td { border: 1px solid #bbb; padding: 4px 6px; text-align: left; }
+  th { background: #eee; }
+  .r { text-align: right; }
+  .pedido { page-break-inside: avoid; margin-bottom: 14px; }
+  .pedido-head { background: #222; color: #fff; padding: 5px 8px; display: flex; justify-content: space-between; }
+  .totales { margin-top: 16px; font-size: 13px; }
+  .totales td { border: none; padding: 2px 6px; }
+  @media print {
+    .no-print { display: none !important; }
+    body { margin: 0; }
+  }
+</style>
+</head>
+<body>
+
+<div class="barra">
+  <div>
+    <h1>Reporte semanal de pedidos</h1>
+    <div>Del {{ lunes|date:"d/m/Y" }} al {{ domingo|date:"d/m/Y" }}</div>
+  </div>
+  <div class="nav no-print">
+    <a href="?fecha={{ semana_anterior|date:'Y-m-d' }}">← Anterior</a>
+    <a href="?fecha={{ semana_siguiente|date:'Y-m-d' }}">Siguiente →</a>
+    <form method="get" style="display:inline">
+      <input type="date" name="fecha" value="{{ lunes|date:'Y-m-d' }}">
+      <button type="submit">Ir</button>
+    </form>
+    <button onclick="window.print()">🖨 Imprimir</button>
+  </div>
+</div>
+
+<h2>Resumen de presentaciones vendidas</h2>
+<table>
+  <thead><tr><th>Perfume</th><th>Presentación</th><th class="r">Pedidos</th><th class="r">Unidades</th></tr></thead>
+  <tbody>
+  {% for r in resumen %}
+    <tr>
+      <td>{{ r.presentacion__perfume__marca }} — {{ r.presentacion__perfume__nombre }}</td>
+      <td>{{ r.presentacion__tipo|capfirst }} {{ r.presentacion__volumen_ml }} ml</td>
+      <td class="r">{{ r.pedidos }}</td>
+      <td class="r"><strong>{{ r.unidades }}</strong></td>
+    </tr>
+  {% empty %}
+    <tr><td colspan="4">Sin pedidos esta semana.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+
+<h2>Detalle de pedidos ({{ pedidos|length }})</h2>
+{% for p in pedidos %}
+<div class="pedido">
+  <div class="pedido-head">
+    <span><strong>{{ p.folio }}</strong> — {{ p.cliente_nombre }}
+      {% if p.cliente_telefono %}· {{ p.cliente_telefono }}{% endif %}</span>
+    <span>{{ p.fecha_creacion|date:"d/m/Y" }} · {{ p.get_estado_display }}</span>
+  </div>
+  <table>
+    <thead><tr><th>Producto</th><th class="r">Cant.</th><th class="r">Precio</th><th class="r">Subtotal</th></tr></thead>
+    <tbody>
+    {% for i in p.items.all %}
+      <tr>
+        <td>{{ i.presentacion.perfume.marca }} — {{ i.presentacion.perfume.nombre }}
+            ({{ i.presentacion.get_tipo_display }} {{ i.presentacion.volumen_ml }} ml)</td>
+        <td class="r">{{ i.cantidad }}</td>
+        <td class="r">${{ i.precio_unitario }}</td>
+        <td class="r">${{ i.subtotal }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+    <tfoot>
+      <tr><td colspan="3" class="r"><strong>Total</strong></td><td class="r">${{ p.total_calc|floatformat:2 }}</td></tr>
+      <tr><td colspan="3" class="r">Pagado</td><td class="r">${{ p.pagado_calc|floatformat:2 }}</td></tr>
+      <tr><td colspan="3" class="r">Saldo</td><td class="r">${{ p.saldo_calc|floatformat:2 }}</td></tr>
+    </tfoot>
+  </table>
+  {% if p.notas %}<small>Notas: {{ p.notas }}</small>{% endif %}
+</div>
+{% endfor %}
+
+<table class="totales" style="width:auto; margin-left:auto;">
+  <tr><td>Total vendido:</td><td class="r"><strong>${{ total_semana|floatformat:2 }}</strong></td></tr>
+  <tr><td>Total cobrado:</td><td class="r">${{ pagado_semana|floatformat:2 }}</td></tr>
+  <tr><td>Saldo pendiente:</td><td class="r">${{ saldo_semana|floatformat:2 }}</td></tr>
+</table>
+
+</body>
+</html>

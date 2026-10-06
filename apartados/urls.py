@@ -4,14 +4,24 @@ from . import views
 app_name = 'apartados'
 
 urlpatterns = [
-    path('apartados/',                        views.lista_pedidos,    name='lista_pedidos'),
-    path('apartados/nuevo/',                  views.crear_pedido,     name='crear'),
-    path('api/presentaciones/buscar/',views.buscar_presentaciones,    name='buscar_presentaciones'),
-    path('apartados/<int:pk>/',               views.detalle_pedido,   name='detalle'),
-    path('apartados/<int:pk>/pago/',          views.registrar_pago,   name='registrar_pago'),
-    path('apartados/<int:pk>/estado/',        views.cambiar_estado,   name='cambiar_estado'),
-    path('apartados/pago/<int:pk>/eliminar/', views.eliminar_pago,    name='eliminar_pago'),
-    path('pedidos/<int:pk>/liquidar/', views.liquidar_pedido, name='liquidar_pedido'),
+    path("apartados/", views.lista_pedidos, name="lista_pedidos"),
+    path("apartados/nuevo/", views.crear_pedido, name="crear"),
+    path(
+        "api/presentaciones/buscar/",
+        views.buscar_presentaciones,
+        name="buscar_presentaciones",
+    ),
+    path("apartados/<int:pk>/", views.detalle_pedido, name="detalle"),
+    path("apartados/<int:pk>/pago/", views.registrar_pago, name="registrar_pago"),
+    path("apartados/<int:pk>/estado/", views.cambiar_estado, name="cambiar_estado"),
+    path(
+        "apartados/pago/<int:pk>/eliminar/", views.eliminar_pago, name="eliminar_pago"
+    ),
+    path("pedidos/<int:pk>/liquidar/", views.liquidar_pedido, name="liquidar_pedido"),
     path("pedido/<uuid:token>/", views.pedido_publico, name="pedido_publico"),
-    path('<int:pk>/eliminar/', views.eliminar_pedido, name='eliminar_pedido'),
+    path("<int:pk>/eliminar/", views.eliminar_pedido, name="eliminar_pedido"),
+    path(
+        "reportes/mas-vendidas/", views.presentaciones_mas_vendidas, name="mas_vendidas"
+    ),
+    path("reportes/semanal/", views.reporte_semanal, name="reporte_semanal"),
 ]

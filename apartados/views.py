@@ -306,3 +306,132 @@ def eliminar_pedido(request, pk):
         return redirect('apartados:lista_pedidos')
 
     return redirect('apartados:detalle', pk=pedido.pk)
+
+from datetime import date, timedelta
+
+from django.contrib.admin.views.decorators import staff_member_required
+from django.db.models import Count, Sum, F, DecimalField
+from django.shortcuts import render
+from django.utils import timezone
+
+from .models import PedidoApartado, PedidoApartadoItem
+
+
+def _parse_fecha(valor, default):
+    try:
+        return date.fromisoformat(valor)
+    except (TypeError, ValueError):
+        return default
+
+
+@staff_member_required
+def presentaciones_mas_vendidas(request):
+    hoy = timezone.localdate()
+    fecha_fin = _parse_fecha(request.GET.get("fecha_fin"), hoy)
+    fecha_inicio = _parse_fecha(
+        request.GET.get("fecha_inicio"), hoy - timedelta(days=30)
+    )
+    tipo = request.GET.get("tipo", "")
+    incluir_abiertos = request.GET.get("incluir_abiertos") == "1"
+
+    items = PedidoApartadoItem.objects.filter(
+        pedido__fecha_creacion__date__range=(fecha_inicio, fecha_fin),
+    ).exclude(pedido__estado="cancelado")
+
+    # Por defecto solo cuenta pedidos con venta real (liquidado / entregado)
+    if not incluir_abiertos:
+        items = items.filter(pedido__estado__in=["liquidado", "entregado"])
+
+    if tipo:
+        items = items.filter(presentacion__tipo=tipo)
+
+    ranking = (
+        items.values(
+            "presentacion_id",
+            "presentacion__perfume__marca",
+            "presentacion__perfume__nombre",
+            "presentacion__tipo",
+            "presentacion__volumen_ml",
+        )
+        .annotate(
+            veces_en_pedidos=Count("pedido", distinct=True),
+            unidades=Sum("cantidad"),
+            ingresos=Sum(
+                F("cantidad") * F("precio_unitario"),
+                output_field=DecimalField(),
+            ),
+        )
+        .order_by("-unidades", "-veces_en_pedidos")
+    )
+
+    return render(
+        request,
+        "apartados/mas_vendidas.html",
+        {
+            "ranking": ranking,
+            "fecha_inicio": fecha_inicio,
+            "fecha_fin": fecha_fin,
+            "tipo": tipo,
+            "incluir_abiertos": incluir_abiertos,
+            "tipos": [
+                ("decant", "Decant"),
+                ("original", "Tamaño Original"),
+                ("set", "Set"),
+                ("miniatura", "Miniatura"),
+                ("otro", "Otro"),
+            ],
+        },
+    )
+
+
+@staff_member_required
+def reporte_semanal(request):
+    hoy = timezone.localdate()
+    referencia = _parse_fecha(request.GET.get("fecha"), hoy)
+    lunes = referencia - timedelta(days=referencia.weekday())
+    domingo = lunes + timedelta(days=6)
+
+    pedidos = (
+        PedidoApartado.objects.filter(fecha_creacion__date__range=(lunes, domingo))
+        .exclude(estado="cancelado")
+        .prefetch_related("items__presentacion__perfume", "pagos")
+        .order_by("fecha_creacion")
+    )
+
+    total_semana = 0
+    pagado_semana = 0
+    for p in pedidos:
+        items = list(p.items.all())  # usa el prefetch, sin queries extra
+        p.total_calc = sum(i.precio_unitario * i.cantidad for i in items)
+        p.pagado_calc = sum(pg.monto for pg in p.pagos.all())
+        p.saldo_calc = p.total_calc - p.pagado_calc
+        total_semana += p.total_calc
+        pagado_semana += p.pagado_calc
+
+    resumen = (
+        PedidoApartadoItem.objects.filter(pedido__in=pedidos)
+        .values(
+            "presentacion__perfume__marca",
+            "presentacion__perfume__nombre",
+            "presentacion__tipo",
+            "presentacion__volumen_ml",
+        )
+        .annotate(unidades=Sum("cantidad"), pedidos=Count("pedido", distinct=True))
+        .order_by("-unidades")
+    )
+
+    return render(
+        request,
+        "apartados/reporte_semanal.html",
+        {
+            "pedidos": pedidos,
+            "resumen": resumen,
+            "lunes": lunes,
+            "domingo": domingo,
+            "semana_anterior": lunes - timedelta(days=7),
+            "semana_siguiente": lunes + timedelta(days=7),
+            "total_semana": total_semana,
+            "pagado_semana": pagado_semana,
+            "saldo_semana": total_semana - pagado_semana,
+        },
+    )
