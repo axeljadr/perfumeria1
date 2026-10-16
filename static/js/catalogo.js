@@ -13,13 +13,7 @@ function contarFiltrosActivos() {
 function actualizarBadge() {
     const badge = document.getElementById('badgeFiltros');
     const count = contarFiltrosActivos();
-    if (count > 0) {
-        badge.textContent = count;
-        badge.style.display = 'inline-block';
-    } else {
-        badge.textContent = '0';
-        badge.style.display = 'none';
-    }
+    if (badge) badge.textContent = count;
 }
 // Toggle filtros
 function toggleFiltros() {

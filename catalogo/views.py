@@ -9,6 +9,7 @@ from datetime import timedelta
 from django.utils.http import url_has_allowed_host_and_scheme
 from urllib.parse import urlencode
 from django_ratelimit.decorators import ratelimit
+from django.urls import reverse
 
 def obtener_ip_cliente(group, request):
     forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR', '')
@@ -383,3 +384,124 @@ def presentacion_eliminar(request, pk):
         'cancelar_url': 'detalle_perfume',
         'cancelar_pk': perfume.pk,
     })
+
+def _foto(perfume):
+    if not perfume.imagen_portada:
+        return ""
+    try:
+        return perfume.imagen_portada.build_url(
+            width=120, height=120, crop="fill", quality="auto", fetch_format="auto"
+        )
+    except Exception:
+        return perfume.imagen_portada.url
+
+
+def _ml(p):
+    try:
+        return float(p.volumen_ml)
+    except (TypeError, ValueError):
+        return 0
+
+ 
+def api_buscar_perfumes(request):
+    q = request.GET.get("q", "").strip()
+    qs = Perfume.objects.filter(activo=True).prefetch_related("presentaciones")
+    if q:
+        qs = qs.filter(Q(nombre__icontains=q) | Q(marca__icontains=q))
+    qs = qs.order_by("marca", "nombre")[:10]
+
+    resultados = []
+    for perfume in qs:
+        pres = sorted(
+            (p for p in perfume.presentaciones.all() if p.activo),
+            key=_ml,
+        )
+        serializar = lambda p: {
+            "id": p.id,
+            "ml": p.volumen_ml,
+            "precio": float(p.precio),
+            "stock": p.stock,
+            "tipo": p.get_tipo_display(),
+        }
+        decants = [serializar(p) for p in pres if p.tipo == 'decant']
+        originales = [serializar(p) for p in pres if p.tipo != 'decant']
+        todos = decants + originales
+
+        resultados.append({
+            'id': perfume.id,
+            'nombre': perfume.nombre,
+            'marca': perfume.marca,
+            'foto': _foto(perfume),
+            'url': reverse('detalle_perfume', args=[perfume.pk]),
+            'desde': min((p['precio'] for p in todos), default=None),
+            'precio_original': originales[0]['precio'] if originales else None,
+            'originales': originales,
+            'decants': decants,
+        })
+
+    return JsonResponse({"resultados": resultados})
+
+def _tag(obj):
+    return {
+        "nombre": obj.nombre,
+        "color": getattr(obj, "color", "") or "",
+        "color_texto": getattr(obj, "color_texto", "") or "",
+        "color_borde": getattr(obj, "color_borde", "") or "",
+    }
+
+def api_detalle_perfume(request, pk):
+    # Público: el catálogo no exige login
+    perfume = get_object_or_404(
+        Perfume.objects.select_related("familia_olfativa").prefetch_related(
+            "acordes", "notas", "presentaciones"
+        ),
+        pk=pk,
+        activo=True,
+    )
+
+    def ml(p):
+        try:
+            return float(p.volumen_ml)
+        except (TypeError, ValueError):
+            return 0
+
+    pres = sorted(
+        (p for p in perfume.presentaciones.all() if p.activo),
+        key=lambda p: (p.tipo != "decant", ml(p)),
+    )
+
+    return JsonResponse(
+        {
+            "id": perfume.id,
+            "nombre": perfume.nombre,
+            "marca": perfume.marca,
+            "genero": perfume.get_genero_display(),
+            "descripcion": perfume.descripcion,
+            "foto": perfume.imagen_portada.url if perfume.imagen_portada else "",
+            "url": reverse("detalle_perfume", args=[perfume.pk]),
+            "familia": perfume.familia_olfativa.nombre
+            if perfume.familia_olfativa
+            else "",
+            "acordes": [_tag(a) for a in perfume.acordes.all()],
+            "notas": [_tag(n) for n in perfume.notas.all()],
+            "longevidad": {
+                "texto": perfume.get_longevidad_display(),
+                "nivel": perfume.longevidad_nivel,
+            },
+            "estela": {
+                "texto": perfume.get_estela_display(),
+                "nivel": perfume.estela_nivel,
+            },
+            "uso": perfume.get_uso_display(),
+            "presentaciones": [
+                {
+                    "id": p.id,
+                    "tipo": p.get_tipo_display(),
+                    "ml": p.volumen_ml,
+                    "precio": float(p.precio),
+                    "disponible": p.stock > 0,
+                }
+                for p in pres
+            ],
+        }
+    )

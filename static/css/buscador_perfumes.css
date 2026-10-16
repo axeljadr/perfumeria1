@@ -1,0 +1,202 @@
+.pf-buscador {
+    position: relative;
+}
+
+.pf-input {
+    width: 100%;
+    padding: .7rem 1rem;
+    border: 1px solid #d9d6d0;
+    background: #fff;
+    font-size: .9rem;
+    color: #0a0a0a;
+    outline: none;
+    transition: border-color .15s;
+}
+
+.pf-input:focus {
+    border-color: #c5a059;
+}
+
+.pf-dropdown {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    z-index: 9999;
+    max-height: 440px;
+    overflow-y: auto;
+    background: #fff;
+    border: 1px solid #d9d6d0;
+    box-shadow: 0 10px 30px rgba(10, 10, 10, .12);
+    display: none;
+}
+
+.pf-dropdown.abierto {
+    display: block;
+}
+
+.pf-item {
+    display: flex;
+    gap: .9rem;
+    padding: .85rem 1rem;
+    border-bottom: 1px solid #eceae6;
+}
+
+.pf-item:last-child {
+    border-bottom: none;
+}
+
+.pf-item:hover {
+    background: #f8f7f5;
+}
+
+.pf-foto {
+    width: 64px;
+    height: 64px;
+    flex-shrink: 0;
+    object-fit: cover;
+    background: #f8f7f5;
+    border: 1px solid #eceae6;
+}
+
+.pf-foto.vacia {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #b5b1a8;
+    font-size: .7rem;
+}
+
+.pf-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.pf-marca {
+    font-size: .68rem;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: #8a867d;
+}
+
+.pf-nombre {
+    font-size: .95rem;
+    font-weight: 600;
+    color: #0a0a0a;
+    margin-bottom: .45rem;
+}
+
+.pf-grupo {
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+    flex-wrap: wrap;
+    margin-top: .3rem;
+}
+
+.pf-grupo-titulo {
+    width: 60px;
+    font-size: .65rem;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: #8a867d;
+}
+
+.pf-opcion {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 62px;
+    padding: .3rem .6rem;
+    border: 1px solid #d9d6d0;
+    background: #fff;
+    cursor: pointer;
+    line-height: 1.2;
+    transition: all .15s;
+}
+
+.pf-opcion .ml {
+    font-size: .7rem;
+    color: #6b675f;
+}
+
+.pf-opcion .precio {
+    font-size: .85rem;
+    font-weight: 700;
+    color: #0a0a0a;
+}
+
+.pf-opcion:hover {
+    border-color: #c5a059;
+    background: #0a0a0a;
+}
+
+.pf-opcion:hover .ml {
+    color: #c5a059;
+}
+
+.pf-opcion:hover .precio {
+    color: #fff;
+}
+
+.pf-opcion.agotado {
+    opacity: .45;
+}
+
+.pf-opcion.agotado .precio {
+    text-decoration: line-through;
+}
+
+.pf-vacio {
+    padding: 1rem;
+    text-align: center;
+    font-size: .85rem;
+    color: #8a867d;
+    font-style: italic;
+}
+a.pf-item {
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+}
+
+.pf-precio-linea {
+    display: flex;
+    align-items: baseline;
+    gap: .5rem;
+    margin-bottom: .2rem;
+}
+
+.pf-tachado {
+    font-size: .8rem;
+    color: #8a867d;
+    text-decoration: line-through;
+}
+
+.pf-desde {
+    font-size: .85rem;
+    color: #0a0a0a;
+}
+
+.pf-desde strong {
+    color: #c5a059;
+    font-size: .95rem;
+}
+
+/* En el catálogo los precios son informativos, no botones */
+span.pf-opcion {
+    cursor: inherit;
+}
+
+span.pf-opcion:hover {
+    background: #fff;
+    border-color: #d9d6d0;
+}
+
+span.pf-opcion:hover .ml {
+    color: #6b675f;
+}
+
+span.pf-opcion:hover .precio {
+    color: #0a0a0a;
+}

@@ -245,3 +245,4 @@ class PagoApartado(models.Model):
 
     def __str__(self):
         return f'${self.monto} — {self.fecha}'
+
