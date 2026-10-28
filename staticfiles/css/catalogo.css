@@ -34,7 +34,7 @@
 
 /* ========================================
    HEADER CATÁLOGO
-   ======================================== */
+   ======================================== */ 
 .catalogo-header {
     text-align: center;
     padding: 5rem 2rem 3rem;
@@ -573,6 +573,50 @@
     font-weight: bold;
     color: var(--color-primary);
     margin-top: 8px;
+}
+nav.paginacion {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: .4rem;
+    margin: 3rem 0 2rem;
+}
+
+nav.paginacion a,
+nav.paginacion span {
+    min-width: 2.4rem;
+    height: 2.4rem;
+    padding: 0 .6rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: .8rem;
+    letter-spacing: .08em;
+    text-decoration: none;
+    color: #0a0a0a;
+    background: #fff;
+    border: 1px solid #d9d6d0;
+    transition: background .15s, color .15s, border-color .15s;
+}
+
+nav.paginacion a:hover {
+    background: #0a0a0a;
+    color: #c5a059;
+    border-color: #0a0a0a;
+}
+
+nav.paginacion span.actual {
+    background: #0a0a0a;
+    color: #c5a059;
+    border-color: #0a0a0a;
+}
+
+nav.paginacion span.puntos {
+    border: none;
+    background: none;
+    color: #8a867d;
+    min-width: auto;
 }
 
 /* ========================================

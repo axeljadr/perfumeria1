@@ -10,6 +10,7 @@ from django.utils.http import url_has_allowed_host_and_scheme
 from urllib.parse import urlencode
 from django_ratelimit.decorators import ratelimit
 from django.urls import reverse
+from django.core.paginator import Paginator
 
 def obtener_ip_cliente(group, request):
     forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR', '')
@@ -40,52 +41,40 @@ def catalogo(request):
     if q:
         perfumes = perfumes.filter(nombre__icontains=q) | perfumes.filter(marca__icontains=q)
 
-    genero = request.GET.get('genero')
-    if genero:
-        perfumes = perfumes.filter(genero=genero)
-
-    familia = request.GET.get('familia')
-    if familia and familia.isdigit():
-        perfumes = perfumes.filter(familia_olfativa_id=familia)
-
-    # Acordes (múltiple)
-    acordes_ids = request.GET.getlist('acorde')
-    acordes_ids = [id for id in acordes_ids if id and id.isdigit()]
-    if acordes_ids:
-        perfumes = perfumes.filter(acordes__id__in=acordes_ids).distinct()
-
-    longevidad = request.GET.get('longevidad')
-    if longevidad:
-        perfumes = perfumes.filter(longevidad=longevidad)
-
-    estela = request.GET.get('estela')
-    if estela:
-        perfumes = perfumes.filter(estela=estela)
-
-    uso = request.GET.get('uso')
-    if uso:
-        perfumes = perfumes.filter(uso=uso)
-
-    # Orden
-    orden = request.GET.get('orden')
-    if orden:
-        perfumes = perfumes.order_by(orden)
-    else:
-        perfumes = perfumes.order_by('-creado_en')
-
-    # Contexto
-    context = {
-        'perfumes': perfumes,  # Sigue siendo un queryset con el campo es_nuevo
-        'generos': Perfume.GENERO_CHOICES,
-        'familias': FamiliaOlfativa.objects.all(),
-        'acordes': Acorde.objects.all(),
-        'acordes_seleccionados': acordes_ids,
-        'longevidad_opciones': Perfume.LONGEVIDAD_CHOICES,
-        'estela_opciones': Perfume.ESTELA_CHOICES,
-        'uso_opciones': Perfume.USO_CHOICES,
+    # Orden (con desempate por id para que la paginación sea estable)
+    ORDENES_VALIDOS = {
+        "nombre",
+        "-nombre",
+        "marca",
+        "-marca",
+        "creado_en",
+        "-creado_en",
     }
-    
-    return render(request, 'catalogo.html', context)
+    orden = request.GET.get("orden")
+    if orden in ORDENES_VALIDOS:
+        perfumes = perfumes.order_by(orden, "-id")
+    else:
+        perfumes = perfumes.order_by("-creado_en", "-id")
+
+    # Paginación: 20 por página
+    paginator = Paginator(perfumes, 20)
+    page_obj = paginator.get_page(request.GET.get("page"))
+
+    # Querystring sin "page" para conservar los filtros en los enlaces
+    params = request.GET.copy()
+    params.pop("page", None)
+
+    context = {
+        "perfumes": page_obj,
+        "page_obj": page_obj,
+        "querystring": params.urlencode(),
+        "generos": Perfume.GENERO_CHOICES,
+        "longevidad_opciones": Perfume.LONGEVIDAD_CHOICES,
+        "estela_opciones": Perfume.ESTELA_CHOICES,
+        "uso_opciones": Perfume.USO_CHOICES,
+    }
+
+    return render(request, "catalogo.html", context)
 
 @ratelimit(key=obtener_ip_cliente, rate='40/m', block=True)
 def detalle_perfume(request, pk):
